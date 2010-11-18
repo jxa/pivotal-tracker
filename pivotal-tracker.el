@@ -64,7 +64,11 @@
 (defconst pivotal-base-url "http://www.pivotaltracker.com/services/v3"
   "format string to use when creating endpoint urls")
 
+(defconst pivotal-states `("unstarted" "started" "finished" "delivered" "accepted" "rejected")
+  "story status will be one of these values")
+
 (defvar *pivotal-current-project*)
+(defvar *pivotal-iteration* 0)
 
 ;;;;;;;; INTERACTIVE USER FUNS
 
@@ -83,12 +87,34 @@
   (pivotal-api (pivotal-url "projects") "GET" 'pivotal-projects-callback))
 
 (defun pivotal-get-current ()
-  "show a buffer of all stories in the current iteration"
+  "show a buffer of all stories in the currently selected iteration"
   (interactive)
-  (assert-pivotal-api-token)
-  (pivotal-api (pivotal-url "projects" *pivotal-current-project* "iterations" "current")
-               "GET"
-               'pivotal-current-callback))
+  (pivotal-get-iteration *pivotal-iteration*))
+
+(defun pivotal-get-iteration (iteration)
+  (let ((query-string (if (= 0 iteration)
+                          "iterations/current"
+                        (format "iterations/backlog?offset=%s&limit=1" iteration))))
+
+    (assert-pivotal-api-token)
+    (pivotal-api (pivotal-url "projects" *pivotal-current-project* query-string)
+                 "GET"
+                 'pivotal-iteration-callback)))
+
+(defun pivotal-next-iteration ()
+  "replace iteration view with the next upcoming iteration"
+  (interactive)
+  (setq *pivotal-iteration* (+ 1 *pivotal-iteration*))
+  (pivotal-get-iteration *pivotal-iteration*))
+
+(defun pivotal-previous-iteration ()
+  "replace iteration view with previous iteration. if you try to go before 0 it just reloads current"
+  (interactive)
+  (setq *pivotal-iteration*
+        (if (= 0 *pivotal-iteration*)
+            0
+          (- *pivotal-iteration* 1)))
+  (pivotal-get-iteration *pivotal-iteration*))
 
 (defun pivotal-set-project ()
   "set the current project, and load the current iteration for that project"
@@ -127,14 +153,21 @@
              'pivotal-estimate-callback
              (format "<story><estimate>%s</estimate></story>" estimate)))
 
+(defun pivotal-next-status ()
+  "transition status according to the current status. assigns the story to user."
+  ;; (interactive)
+  ;; (let ((next-state "started"))
+  ;;  (completing-read "Status: " pivotal-states nil t nil nil next-state))
+  )
+
 
 ;;;;;;;; CALLBACKS
 
 
-(defun pivotal-current-callback (status)
+(defun pivotal-iteration-callback (status)
   (let ((xml (pivotal-get-xml-from-current-buffer)))
-    (with-current-buffer (get-buffer-create "*pivotal-current-iteration*")
-      (pivotal-mode) 
+    (with-current-buffer (get-buffer-create "*pivotal-iteration*")
+      (pivotal-mode)
       (delete-region (point-min) (point-max))
       (switch-to-buffer (current-buffer))
       (pivotal-insert-iteration xml))))
@@ -158,12 +191,12 @@
       (message "Story was updated but view is not refreshed. You could press R to refresh, or just live with it until I implement this.")
     (message "Story not updated! %s" status)))
 
-
 ;;;;;;;; MODE DEFINITIONS
 
 
 (defconst pivotal-font-lock-keywords
-  `(("^\\(\\[.*?\\]\\)+" 0 font-lock-doc-face)))
+  `(("^\\(\\[.*?\\]\\)+" 0 font-lock-doc-face)
+    ("^\\!\\(.*?\\)\\!$") 0 font-lock-comment-face))
 
 (define-derived-mode pivotal-mode fundamental-mode "Pivotal" 
   (suppress-keymap pivotal-mode-map)
@@ -172,8 +205,11 @@
   (define-key pivotal-mode-map (kbd "R") 'pivotal-get-current)
   (define-key pivotal-mode-map (kbd "n") 'next-line)
   (define-key pivotal-mode-map (kbd "p") 'previous-line)
+  (define-key pivotal-mode-map (kbd "N") 'pivotal-next-iteration)
+  (define-key pivotal-mode-map (kbd "P") 'pivotal-previous-iteration)
   (define-key pivotal-mode-map (kbd "E") 'pivotal-estimate-story)
-  (define-key pivotal-mode-map (kbd "P") 'pivotal)
+  (define-key pivotal-mode-map (kbd ".") 'pivotal-next-status)
+  (define-key pivotal-mode-map (kbd "L") 'pivotal)
   (setq font-lock-defaults '((pivotal-font-lock-keywords) nil t))
   (font-lock-mode))
 
@@ -225,6 +261,10 @@
 
 (defun pivotal-insert-iteration (iteration-xml)
   "extract story information from xml and insert it into current buffer"
+  (insert (if (= 0 *pivotal-iteration*)
+              "! CURRENT ITERATION !\n"
+            (format "! ITERATION %s !\n" *pivotal-iteration*)))
+  
   (mapc (lambda (story)
           (let* ((start-point (point))
                  (_ (insert (pivotal-format-story-oneline story)))
