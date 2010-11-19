@@ -40,7 +40,9 @@
 
 ;; 't' toggles expanded view for a story
 ;; 'R' refreshes the view
-;; 'P' displays the Projects View
+;; 'L' list projects. displays the Projects View
+;; 'N' will load and display the next iteration
+;; 'P' will load and display the previous iteration
 ;; 'E' will prompt for a new integer estimate for that story
 ;; numeric prefix + E will use that number for the estimate
 ;;   example: pressing '2' followed by pressing 'E' will assign a 2 pt estimate for current story
@@ -67,8 +69,10 @@
 (defconst pivotal-states `("unstarted" "started" "finished" "delivered" "accepted" "rejected")
   "story status will be one of these values")
 
+(defconst pivotal-current-iteration-number -1)
+
 (defvar *pivotal-current-project*)
-(defvar *pivotal-iteration* 0)
+(defvar *pivotal-iteration* pivotal-current-iteration-number)
 
 ;;;;;;;; INTERACTIVE USER FUNS
 
@@ -92,7 +96,7 @@
   (pivotal-get-iteration *pivotal-iteration*))
 
 (defun pivotal-get-iteration (iteration)
-  (let ((query-string (if (= 0 iteration)
+  (let ((query-string (if (= pivotal-current-iteration-number iteration)
                           "iterations/current"
                         (format "iterations/backlog?offset=%s&limit=1" iteration))))
 
@@ -111,8 +115,8 @@
   "replace iteration view with previous iteration. if you try to go before 0 it just reloads current"
   (interactive)
   (setq *pivotal-iteration*
-        (if (= 0 *pivotal-iteration*)
-            0
+        (if (= pivotal-current-iteration-number *pivotal-iteration*)
+            pivotal-current-iteration-number
           (- *pivotal-iteration* 1)))
   (pivotal-get-iteration *pivotal-iteration*))
 
@@ -153,12 +157,14 @@
              'pivotal-estimate-callback
              (format "<story><estimate>%s</estimate></story>" estimate)))
 
-(defun pivotal-next-status ()
+(defun pivotal-set-status ()
   "transition status according to the current status. assigns the story to user."
-  ;; (interactive)
-  ;; (let ((next-state "started"))
-  ;;  (completing-read "Status: " pivotal-states nil t nil nil next-state))
-  )
+  (interactive)
+  (let ((new-state (completing-read "Status: " pivotal-states nil t)))
+    (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point))
+                 "PUT"
+                 'pivotal-status-callback
+                 (format "<story><current_state>%s</current_state></story>" new-state))))
 
 
 ;;;;;;;; CALLBACKS
@@ -187,28 +193,36 @@
     (switch-to-buffer (current-buffer))))
 
 (defun pivotal-estimate-callback (status)
+  (pivotal-not-implemented-message status))
+
+(defun pivotal-status-callback (status)
+  (pivotal-not-implemented-message status))
+
+(defun pivotal-not-implemented-message (status)
   (if (null status)
       (message "Story was updated but view is not refreshed. You could press R to refresh, or just live with it until I implement this.")
     (message "Story not updated! %s" status)))
+
+
+
 
 ;;;;;;;; MODE DEFINITIONS
 
 
 (defconst pivotal-font-lock-keywords
   `(("^\\(\\[.*?\\]\\)+" 0 font-lock-doc-face)
-    ("^\\!\\(.*?\\)\\!$") 0 font-lock-comment-face))
+    ("^\\!\\(.*?\\)\\!$") 0 font-lock-keyword-face))
 
 (define-derived-mode pivotal-mode fundamental-mode "Pivotal" 
   (suppress-keymap pivotal-mode-map)
   (define-key pivotal-mode-map (kbd "t") 'pivotal-toggle-visibility)
-  (define-key pivotal-mode-map (kbd "o") 'pivotal-toggle-visibility)
   (define-key pivotal-mode-map (kbd "R") 'pivotal-get-current)
   (define-key pivotal-mode-map (kbd "n") 'next-line)
   (define-key pivotal-mode-map (kbd "p") 'previous-line)
   (define-key pivotal-mode-map (kbd "N") 'pivotal-next-iteration)
   (define-key pivotal-mode-map (kbd "P") 'pivotal-previous-iteration)
   (define-key pivotal-mode-map (kbd "E") 'pivotal-estimate-story)
-  (define-key pivotal-mode-map (kbd ".") 'pivotal-next-status)
+  (define-key pivotal-mode-map (kbd "S") 'pivotal-set-status)
   (define-key pivotal-mode-map (kbd "L") 'pivotal)
   (setq font-lock-defaults '((pivotal-font-lock-keywords) nil t))
   (font-lock-mode))
@@ -261,7 +275,7 @@
 
 (defun pivotal-insert-iteration (iteration-xml)
   "extract story information from xml and insert it into current buffer"
-  (insert (if (= 0 *pivotal-iteration*)
+  (insert (if (= pivotal-current-iteration-number *pivotal-iteration*)
               "! CURRENT ITERATION !\n"
             (format "! ITERATION %s !\n" *pivotal-iteration*)))
   
