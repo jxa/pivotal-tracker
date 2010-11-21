@@ -320,15 +320,16 @@
 
 (defun pivotal-format-story (story)
   (format "
-  %s
-  ---
-  %s #%s
-  Status:       %s
-  Requested By: %s
-  Owned By:     %s
-  ---
-  %s
-
+%s
+---
+%s #%s
+Status:       %s
+Requested By: %s
+Owned By:     %s
+--- Description
+%s
+--- Comments
+%s
 "
           (pivotal-story-attribute story 'name)
           (pivotal-story-attribute story 'story_type)
@@ -336,7 +337,8 @@
           (pivotal-story-attribute story 'current_state)
           (pivotal-story-attribute story 'requested_by)
           (pivotal-story-attribute story 'owned_by)
-          (pivotal-story-attribute story 'description)))
+          (pivotal-story-attribute story 'description)
+          (pivotal-comments story)))
 
 (defun pivotal-format-story-oneline (story)
   (let ((owner (pivotal-story-attribute story 'owned_by))
@@ -368,13 +370,43 @@
       ((story (if (eq 'story (car xml))
                   xml
                 (car xml)))
-       (node (xml-get-children story attribute))
-       (value (caddar node)))
+       (value (pivotal-element-value story attribute)))
     (if (symbolp value)
         (symbol-name value)
       value)))
 
+(defun pivotal-element-value (xml element)
+  (let ((node (xml-get-children xml element)))
+    (caddar node)))
+
+(defun pivotal-xml-collection (xml structure)
+  "return a collection of nodes found by the given structure"
+  (let ((results nil)
+        (node xml))
+    (mapc (lambda (element)
+            (progn
+              (setq results (xml-get-children node element))
+              (setq node (first results))))
+          structure)
+    results))
+  
+(defun pivotal-comments (story)
+  (let ((notes (pivotal-xml-collection story `(notes note)))
+        (comments ""))
+    (mapcar (lambda (note)
+              (setq comments
+                    (concat comments
+                            (format "%s  --  %s at %s\n"
+                                    (pivotal-element-value note 'text)
+                                    (pivotal-element-value note 'author)
+                                    (pivotal-element-value note 'noted_at)))))
+            notes)
+    comments))
+
+
 (provide 'pivotal-tracker)
+
+
 
 
 ;;;;;;;;; TEST CODE
@@ -388,11 +420,11 @@
         (kill-buffer)
         xml)))
 
-  (let ((xml (load-test-xml "projects.xml")))
-    (pivotal-insert-projects xml))
+  (let* ((xml (load-test-xml "iterations.xml")))
+    (pivotal-comments (first (pivotal-extract-stories-from-iteration-xml xml))))
   
-)
+  (let ((xml (load-test-xml "iterations.xml")))
+    (pivotal-xml-collection (first xml) `(iteration stories story notes note)))
 
-
-
+  )
 
