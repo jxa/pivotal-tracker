@@ -279,8 +279,8 @@
 (defun pivotal-get-project-data (xml)
   "return a list of (id name) pairs"
   (mapcar (lambda (proj)
-            (list (car (last (car (xml-get-children proj 'id))))
-                  (car (last (car (xml-get-children proj 'name))))))
+            (list (pivotal-element-value proj 'id)
+                  (pivotal-element-value proj 'name)))
           (xml-get-children (car xml) 'project)))
 
 (defun pivotal-insert-iteration (iteration-xml)
@@ -358,9 +358,7 @@ Owned By:     %s
     (format "[%4.4s][%1.1s][%9.9s] %.80s\n" owner estimate status story-name)))
 
 (defun pivotal-extract-stories-from-iteration-xml (iteration-xml)
-  (let* ((iteration  (car (xml-get-children (car iteration-xml) 'iteration)))
-         (story-list (car (xml-get-children iteration 'stories)))
-         (stories (xml-get-children story-list 'story)))
+  (let ((stories (pivotal-xml-collection (car iteration-xml) `(iteration stories story))))
     (sort stories 'pivotal-sort-stories)))
 
 (defun pivotal-sort-stories (story1 story2)
