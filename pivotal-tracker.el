@@ -166,6 +166,14 @@
                  'pivotal-status-callback
                  (format "<story><current_state>%s</current_state></story>" new-state))))
 
+(defun pivotal-add-comment (comment)
+  "prompt user for comment and add it to the current story"
+  (interactive "sAdd Comment: ")
+  (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point) "notes")
+               "POST"
+               'pivotal-comment-callback
+               (format "<note><text>%s</text></note>" (xml-escape-string comment))))
+
 
 ;;;;;;;; CALLBACKS
 
@@ -203,7 +211,8 @@
       (message "Story was updated but view is not refreshed. You could press R to refresh, or just live with it until I implement this.")
     (message "Story not updated! %s" status)))
 
-
+(defun pivotal-comment-callback (status)
+  (pivotal-not-implemented-message status))
 
 
 ;;;;;;;; MODE DEFINITIONS
@@ -222,6 +231,7 @@
   (define-key pivotal-mode-map (kbd "N") 'pivotal-next-iteration)
   (define-key pivotal-mode-map (kbd "P") 'pivotal-previous-iteration)
   (define-key pivotal-mode-map (kbd "E") 'pivotal-estimate-story)
+  (define-key pivotal-mode-map (kbd "C") 'pivotal-add-comment)
   (define-key pivotal-mode-map (kbd "S") 'pivotal-set-status)
   (define-key pivotal-mode-map (kbd "L") 'pivotal)
   (setq font-lock-defaults '((pivotal-font-lock-keywords) nil t))
@@ -425,6 +435,13 @@ Owned By:     %s
   
   (let ((xml (load-test-xml "iterations.xml")))
     (pivotal-xml-collection (first xml) `(iteration stories story notes note)))
+
+  (defun pivotal-test-callback (status)
+    (message "%s" status))
+
+  (pivotal-api (pivotal-url "")
+               "GET"
+               'pivotal-status-callback)
 
   )
 
