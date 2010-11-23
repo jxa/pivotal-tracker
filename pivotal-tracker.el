@@ -228,6 +228,10 @@
   (define-key pivotal-mode-map (kbd "R") 'pivotal-get-current)
   (define-key pivotal-mode-map (kbd "n") 'next-line)
   (define-key pivotal-mode-map (kbd "p") 'previous-line)
+  ;; add some bindings for my vim friends
+  (define-key pivotal-mode-map (kbd "j") 'next-line)
+  (define-key pivotal-mode-map (kbd "k") 'previous-line)
+
   (define-key pivotal-mode-map (kbd "N") 'pivotal-next-iteration)
   (define-key pivotal-mode-map (kbd "P") 'pivotal-previous-iteration)
   (define-key pivotal-mode-map (kbd "E") 'pivotal-estimate-story)
@@ -242,6 +246,10 @@
   (define-key pivotal-project-mode-map (kbd "R") 'pivotal-get-projects)
   (define-key pivotal-project-mode-map (kbd "n") 'next-line)
   (define-key pivotal-project-mode-map (kbd "p") 'previous-line)
+  ;; add some bindings for my vim friends
+  (define-key pivotal-project-mode-map (kbd "j") 'next-line)
+  (define-key pivotal-project-mode-map (kbd "k") 'previous-line)
+
   (define-key pivotal-project-mode-map (kbd ".") 'pivotal-set-project)
   (define-key pivotal-project-mode-map (kbd "C-m") 'pivotal-set-project))
 
