@@ -154,7 +154,7 @@
   (message "going to set estimate to %s" estimate)
   (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point))
              "PUT"
-             'pivotal-estimate-callback
+             'pivotal-update-current-story
              (format "<story><estimate>%s</estimate></story>" estimate)))
 
 (defun pivotal-set-status ()
@@ -163,7 +163,7 @@
   (let ((new-state (completing-read "Status: " pivotal-states nil t)))
     (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point))
                  "PUT"
-                 'pivotal-status-callback
+                 'pivotal-update-current-story
                  (format "<story><current_state>%s</current_state></story>" new-state))))
 
 (defun pivotal-add-comment (comment)
@@ -171,7 +171,7 @@
   (interactive "sAdd Comment: ")
   (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point) "notes")
                "POST"
-               'pivotal-comment-callback
+               'pivotal-update-current-story
                (format "<note><text>%s</text></note>" (xml-escape-string comment))))
 
 
@@ -200,19 +200,11 @@
     (insert (pivotal-format-story xml)) (rename-buffer (concat "*pivotal-" (pivotal-story-attribute xml 'id) "*"))
     (switch-to-buffer (current-buffer))))
 
-(defun pivotal-estimate-callback (status)
-  (pivotal-not-implemented-message status))
-
-(defun pivotal-status-callback (status)
-  (pivotal-not-implemented-message status))
-
-(defun pivotal-not-implemented-message (status)
-  (if (null status)
-      (message "Story was updated but view is not refreshed. You could press R to refresh, or just live with it until I implement this.")
-    (message "Story not updated! %s" status)))
-
-(defun pivotal-comment-callback (status)
-  (pivotal-not-implemented-message status))
+(defun pivotal-update-current-story (status)
+  (let ((story (pivotal-get-xml-from-current-buffer)))
+    (with-current-buffer (get-buffer-create "*pivotal-iteration*")
+      (pivotal-remove-story-at-point)
+      (pivotal-insert-story story))))
 
 
 ;;;;;;;; MODE DEFINITIONS
@@ -296,17 +288,19 @@
   (insert (if (= pivotal-current-iteration-number *pivotal-iteration*)
               "! CURRENT ITERATION !\n"
             (format "! ITERATION %s !\n" *pivotal-iteration*)))
-  
-  (mapc (lambda (story)
-          (let* ((start-point (point))
-                 (_ (insert (pivotal-format-story-oneline story)))
-                 (end-of-oneline (point))
-                 (_ (insert (pivotal-format-story story)))
-                 (end-of-detail (point)))
-            (pivotal-mark-story start-point end-of-detail story)
-            (pivotal-mark-invisibility end-of-oneline end-of-detail)
-            (pivotal-hide end-of-oneline)))
+  (mapc 'pivotal-insert-story
         (pivotal-extract-stories-from-iteration-xml iteration-xml)))
+
+(defun pivotal-insert-story (story)
+  "insert single story into current buffer"
+  (let* ((start-point (point))
+         (_ (insert (pivotal-format-story-oneline story)))
+         (end-of-oneline (point))
+         (_ (insert (pivotal-format-story story)))
+         (end-of-detail (point)))
+    (pivotal-mark-story start-point end-of-detail story)
+    (pivotal-mark-invisibility end-of-oneline end-of-detail)
+    (pivotal-hide end-of-oneline)))
 
 (defun pivotal-invisibility-id (story-id)
   (intern (concat "pivotal-" story-id)))
@@ -364,6 +358,25 @@ Owned By:     %s
         (story-name (pivotal-story-attribute story 'name))
         (status (pivotal-story-attribute story 'current_state)))
     (format "[%4.4s][%1.1s][%9.9s] %.80s\n" owner estimate status story-name)))
+
+(defun pivotal-remove-story-at-point ()
+  "delete all characters that belong to the current story. Put point at the first char of the next story."
+  (interactive)
+  (let ((story-id (get-text-property (point) 'pivotal-story-id))
+        (first-point (point))
+        (last-point (point)))
+    (while (pivotal-point-has-story-id (- first-point 1) story-id)
+      (setq first-point (- first-point 1)))
+    (while (pivotal-point-has-story-id (+ last-point 1) story-id)
+      (setq last-point (+ last-point 1)))
+    (delete-region first-point last-point)
+    (if (< (point) (point-max))
+        (forward-char))))
+
+(defun pivotal-point-has-story-id (point story-id)
+  (if (and (<= point (point-max)) (>= point (point-min)))
+      (eq (get-text-property point 'pivotal-story-id) story-id)
+    nil))
 
 (defun pivotal-extract-stories-from-iteration-xml (iteration-xml)
   (let ((stories (pivotal-xml-collection (car iteration-xml) `(iteration stories story))))
@@ -430,6 +443,8 @@ Owned By:     %s
 
 (when nil
 
+  (global-set-key (kbd "C-=") (lambda () (interactive) (message "Point: %s" (point))))
+
   (defun load-test-xml (file)
     (with-current-buffer (find-file-noselect file)
       (let ((xml (cdr (xml-parse-fragment))))
@@ -448,6 +463,11 @@ Owned By:     %s
   (pivotal-api (pivotal-url "")
                "GET"
                'pivotal-status-callback)
+
+  (defun testr (i)
+    (message "%s" i))
+
+  (mapc 'testr `(one two three))
 
   )
 
