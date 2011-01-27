@@ -17,37 +17,12 @@
 ;; or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA 02111-1307 USA
 
-;; pivotal-tracker.el
-
-;; This library provides basic integration with Pivotal Tracker. 
-;; It is currently in an early state with very basic functionality
-;; but more is coming soon. 
-
 ;; Usage
 
 ;; Before using the tracker you must customize your pivotal API key. 
 ;; You can obtain the key from the 'My Profile' link in the Pivotal Tracker
 ;; web application.
 ;; M-x customize-group RET pivotal RET
-
-;; Projects View
-
-;; M-x pivotal will display a list of your current projects
-;; RET or '.' will load the current iteration for the given project
-;; n and p move between lines, like dired mode
-
-;; Current Project View
-
-;; 't' toggles expanded view for a story. 'Enter' also toggles this view
-;; 'R' refreshes the view
-;; 'L' list projects. displays the Projects View
-;; 'N' will load and display the next iteration
-;; 'P' will load and display the previous iteration
-;; 'E' will prompt for a new integer estimate for that story
-;; numeric prefix + E will use that number for the estimate
-;;   example: pressing '2' followed by pressing 'E' will assign a 2 pt estimate for current story
-;; 'C' will prompt for a new comment
-;; 'S' will prompt for new status
 
 ;; Issues + Feature Requests
 
