@@ -380,12 +380,12 @@ Owned By:     %s
 (defun pivotal-remove-story-at-point ()
   "delete all characters that belong to the current story. Put point at the first char of the next story."
   (interactive)
-  (let ((bounds (pivotal-story-boundaries (point)))
-        (first-point (first bounds))
-        (last-point (second bounds))
-        (delete-region first-point last-point)
+  (let* ((bounds (pivotal-story-boundaries (point)))
+         (first-point (first bounds))
+         (last-point (second bounds)))
+    (delete-region first-point last-point)
     (if (< (point) (point-max))
-        (forward-char)))))
+        (forward-char))))
 
 (defun pivotal-story-boundaries (point)
   (let ((story-id (get-text-property (point) 'pivotal-story-id))
