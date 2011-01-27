@@ -38,7 +38,7 @@
 
 ;; Current Project View
 
-;; 't' toggles expanded view for a story
+;; 't' toggles expanded view for a story. 'Enter' also toggles this view
 ;; 'R' refreshes the view
 ;; 'L' list projects. displays the Projects View
 ;; 'N' will load and display the next iteration
@@ -46,6 +46,8 @@
 ;; 'E' will prompt for a new integer estimate for that story
 ;; numeric prefix + E will use that number for the estimate
 ;;   example: pressing '2' followed by pressing 'E' will assign a 2 pt estimate for current story
+;; 'C' will prompt for a new comment
+;; 'S' will prompt for new status
 
 ;; Issues + Feature Requests
 
@@ -223,6 +225,7 @@
 (define-derived-mode pivotal-mode fundamental-mode "Pivotal" 
   (suppress-keymap pivotal-mode-map)
   (define-key pivotal-mode-map (kbd "t") 'pivotal-toggle-visibility)
+  (define-key pivotal-mode-map (kbd "C-m") 'pivotal-toggle-visibility)
   (define-key pivotal-mode-map (kbd "R") 'pivotal-get-current)
   (define-key pivotal-mode-map (kbd "n") 'next-line)
   (define-key pivotal-mode-map (kbd "p") 'previous-line)
