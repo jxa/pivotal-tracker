@@ -171,7 +171,7 @@
   (interactive "sAdd Comment: ")
   (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point) "notes")
                "POST"
-               'pivotal-update-current-story
+               'pivotal-add-comment-callback
                (format "<note><text>%s</text></note>" (xml-escape-string comment))))
 
 
@@ -206,8 +206,14 @@
       (pivotal-remove-story-at-point)
       (pivotal-insert-story story))))
 
+(defun pivotal-add-comment-callback (status)
+  (let* ((xml (pivotal-get-xml-from-current-buffer))
+         (comment (pivotal-format-comment (car xml))))
+    (with-current-buffer (get-buffer-create "*pivotal-iteration*")
+      (pivotal-append-to-current-story comment))))
 
 ;;;;;;;; MODE DEFINITIONS
+
 
 
 (defconst pivotal-font-lock-keywords
@@ -298,15 +304,27 @@
          (end-of-oneline (point))
          (_ (insert (pivotal-format-story story)))
          (end-of-detail (point)))
-    (pivotal-mark-story start-point end-of-detail story)
+    (pivotal-mark-story start-point end-of-detail (pivotal-story-attribute story 'id))
     (pivotal-mark-invisibility end-of-oneline end-of-detail)
     (pivotal-hide end-of-oneline)))
+
+(defun pivotal-append-to-current-story (text)
+  (progn
+    (pivotal-show)
+    (let* ((story-id (pivotal-story-id-at-point (point)))
+           (bounds (pivotal-story-boundaries (point)))
+           (story-end (second bounds))
+           (_ (goto-char story-end))
+           (_ (insert text))
+           (new-end (point)))
+      (pivotal-mark-story story-end new-end story-id)
+      (pivotal-mark-invisibility story-end new-end))))
 
 (defun pivotal-invisibility-id (story-id)
   (intern (concat "pivotal-" story-id)))
 
-(defun pivotal-mark-story (min max story)
-  (put-text-property min max 'pivotal-story-id (pivotal-story-attribute story 'id)))
+(defun pivotal-mark-story (min max story-id)
+  (put-text-property min max 'pivotal-story-id story-id))
 
 (defun pivotal-mark-invisibility (min max)
   (let ((overlay (make-overlay min max)))
@@ -362,6 +380,14 @@ Owned By:     %s
 (defun pivotal-remove-story-at-point ()
   "delete all characters that belong to the current story. Put point at the first char of the next story."
   (interactive)
+  (let ((bounds (pivotal-story-boundaries (point)))
+        (first-point (first bounds))
+        (last-point (second bounds))
+        (delete-region first-point last-point)
+    (if (< (point) (point-max))
+        (forward-char)))))
+
+(defun pivotal-story-boundaries (point)
   (let ((story-id (get-text-property (point) 'pivotal-story-id))
         (first-point (point))
         (last-point (point)))
@@ -369,13 +395,11 @@ Owned By:     %s
       (setq first-point (- first-point 1)))
     (while (pivotal-point-has-story-id (+ last-point 1) story-id)
       (setq last-point (+ last-point 1)))
-    (delete-region first-point last-point)
-    (if (< (point) (point-max))
-        (forward-char))))
+    (list first-point last-point)))
 
 (defun pivotal-point-has-story-id (point story-id)
   (if (and (<= point (point-max)) (>= point (point-min)))
-      (eq (get-text-property point 'pivotal-story-id) story-id)
+      (string-equal (get-text-property point 'pivotal-story-id) story-id)
     nil))
 
 (defun pivotal-extract-stories-from-iteration-xml (iteration-xml)
@@ -423,15 +447,15 @@ Owned By:     %s
   (let ((notes (pivotal-xml-collection story `(notes note)))
         (comments ""))
     (mapcar (lambda (note)
-              (setq comments
-                    (concat comments
-                            (format "%s  --  %s at %s\n"
-                                    (pivotal-element-value note 'text)
-                                    (pivotal-element-value note 'author)
-                                    (pivotal-element-value note 'noted_at)))))
+              (setq comments (concat comments (pivotal-format-comment note))))
             notes)
     comments))
 
+(defun pivotal-format-comment (note)
+  (format "%s  --  %s at %s\n"
+          (pivotal-element-value note 'text)
+          (pivotal-element-value note 'author)
+          (pivotal-element-value note 'noted_at)))
 
 (provide 'pivotal-tracker)
 
@@ -443,7 +467,7 @@ Owned By:     %s
 
 (when nil
 
-  (global-set-key (kbd "C-=") (lambda () (interactive) (message "Point: %s" (point))))
+  (global-set-key (kbd "C-=") (lambda () (interactive) (message "Point: %S. Story: %S" (point) (get-text-property (point) 'pivotal-story-id))))
 
   (defun load-test-xml (file)
     (with-current-buffer (find-file-noselect file)
@@ -470,4 +494,6 @@ Owned By:     %s
   (mapc 'testr `(one two three))
 
   )
+
+
 
