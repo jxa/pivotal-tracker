@@ -178,16 +178,26 @@
     (switch-to-buffer (current-buffer))))
 
 (defun pivotal-update-current-story (status)
-  (let ((story (pivotal-get-xml-from-current-buffer)))
-    (with-current-buffer (get-buffer-create "*pivotal-iteration*")
-      (pivotal-remove-story-at-point)
-      (pivotal-insert-story story))))
+  (let ((xml (pivotal-get-xml-from-current-buffer)))
+    (if (eq :error (car status))
+        (message "Error: %s" (pivotal-parse-errors xml))
+      (with-current-buffer (get-buffer-create "*pivotal-iteration*")
+        (pivotal-remove-story-at-point)
+        (pivotal-insert-story xml)))))
 
 (defun pivotal-add-comment-callback (status)
   (let* ((xml (pivotal-get-xml-from-current-buffer))
          (comment (pivotal-format-comment (car xml))))
     (with-current-buffer (get-buffer-create "*pivotal-iteration*")
       (pivotal-append-to-current-story comment))))
+
+(defun pivotal-parse-errors (xml)
+  (mapconcat (lambda (error)
+               (car (last error)))
+             (xml-get-children (car xml) 'error)
+             " "))
+
+
 
 ;;;;;;;; MODE DEFINITIONS
 
