@@ -391,20 +391,7 @@ Owned By:     %s
     nil))
 
 (defun pivotal-extract-stories-from-iteration-xml (iteration-xml)
-  (let ((stories (pivotal-xml-collection (car iteration-xml) `(iteration stories story))))
-    (sort stories 'pivotal-sort-stories)))
-
-(defun pivotal-sort-stories (story1 story2)
-  (<= (pivotal-display-priority story1) (pivotal-display-priority story2)))
-
-(defun pivotal-display-priority (story)
-  (case (intern (pivotal-story-attribute story 'current_state))
-    (accepted  1)
-    (delivered 2)
-    (finished  3)
-    (started   4)
-    (unstarted 5)
-    (otherwise 6)))
+  (pivotal-xml-collection (car iteration-xml) `(iteration stories story)))
 
 (defun pivotal-story-attribute (xml attribute)
   (let*
