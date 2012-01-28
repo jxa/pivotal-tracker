@@ -1,4 +1,5 @@
-;; pivotal-tracker.el
+;;; pivotal-tracker.el --- Interact with Pivotal Tracker through its API
+
 ;; Author: John Andrews <john.m.andrews@gmail.com>
 ;; Created: 2010.11.14
 
@@ -17,9 +18,9 @@
 ;; or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA 02111-1307 USA
 
-;; Usage
+;;; Commentary:
 
-;; Before using the tracker you must customize your pivotal API key. 
+;; Before using the tracker you must customize your pivotal API key.
 ;; You can obtain the key from the 'My Profile' link in the Pivotal Tracker
 ;; web application.
 ;; M-x customize-group RET pivotal RET
@@ -28,6 +29,8 @@
 
 ;; Development is hosted on github
 ;; https://github.com/jxa/pivotal-tracker.git
+
+;;; Code:
 
 (require 'xml)
 (require 'url)
@@ -207,7 +210,7 @@
   `(("^\\(\\[.*?\\]\\)+" 0 font-lock-doc-face)
     ("^\\!\\(.*?\\)\\!$") 0 font-lock-keyword-face))
 
-(define-derived-mode pivotal-mode fundamental-mode "Pivotal" 
+(define-derived-mode pivotal-mode fundamental-mode "Pivotal"
   (suppress-keymap pivotal-mode-map)
   (define-key pivotal-mode-map (kbd "t") 'pivotal-toggle-visibility)
   (define-key pivotal-mode-map (kbd "C-m") 'pivotal-toggle-visibility)
@@ -227,7 +230,7 @@
   (setq font-lock-defaults '((pivotal-font-lock-keywords) nil t))
   (font-lock-mode))
 
-(define-derived-mode pivotal-project-mode fundamental-mode "PivotalProjects" 
+(define-derived-mode pivotal-project-mode fundamental-mode "PivotalProjects"
   (suppress-keymap pivotal-project-mode-map)
   (define-key pivotal-project-mode-map (kbd "R") 'pivotal-get-projects)
   (define-key pivotal-project-mode-map (kbd "n") 'next-line)
@@ -417,7 +420,7 @@ Owned By:     %s
               (setq node (first results))))
           structure)
     results))
-  
+
 (defun pivotal-comments (story)
   (let ((notes (pivotal-xml-collection story `(notes note)))
         (comments ""))
@@ -452,7 +455,7 @@ Owned By:     %s
 
   (let* ((xml (load-test-xml "iterations.xml")))
     (pivotal-comments (first (pivotal-extract-stories-from-iteration-xml xml))))
-  
+
   (let ((xml (load-test-xml "iterations.xml")))
     (pivotal-xml-collection (first xml) `(iteration stories story notes note)))
 
@@ -469,6 +472,3 @@ Owned By:     %s
   (mapc 'testr `(one two three))
 
   )
-
-
-
