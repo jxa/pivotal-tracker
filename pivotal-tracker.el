@@ -1,4 +1,5 @@
-;; pivotal-tracker.el
+;;; pivotal-tracker.el --- Interact with Pivotal Tracker through its API
+
 ;; Author: John Andrews <john.m.andrews@gmail.com>
 ;; Created: 2010.11.14
 
@@ -17,7 +18,7 @@
 ;; or write to the Free Software Foundation, Inc., 59 Temple Place,
 ;; Suite 330, Boston, MA 02111-1307 USA
 
-;; Usage
+;;; Commentary:
 
 ;; Before using the tracker you must customize your pivotal API key. 
 ;; You can obtain the key from the 'My Profile' link in the Pivotal Tracker
@@ -28,6 +29,8 @@
 
 ;; Development is hosted on github
 ;; https://github.com/jxa/pivotal-tracker.git
+
+;;; Code:
 
 (require 'xml)
 (require 'url)
