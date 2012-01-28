@@ -1,12 +1,12 @@
 # pivotal-tracker.el
 
 Pivotal Tracker Mode provides a mode and functions for interacting with Pivotal Tracker through its API.
-It is designed to give most of the functionality that is important to a developer. 
+It is designed to give most of the functionality that is important to a developer.
 It is not an attempt to replace every feature of the web interface.
 
 ## Initial Setup
 
-Before using the tracker you must customize your pivotal API key. 
+Before using the tracker you must customize your pivotal API key.
 You can obtain the key from the 'My Profile' link in the Pivotal Tracker
 web application. Once you have the key, customize it.
 
@@ -41,7 +41,7 @@ Development is [hosted on github](https://github.com/jxa/pivotal-tracker)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation version 2.
+published by the Free Software Foundation version 2, or any later version.
 
 This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
