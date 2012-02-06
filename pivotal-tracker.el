@@ -43,7 +43,7 @@
   :group 'pivotal
   :type 'string)
 
-(defconst pivotal-base-url "http://www.pivotaltracker.com/services/v3"
+(defconst pivotal-base-url "https://www.pivotaltracker.com/services/v3"
   "format string to use when creating endpoint urls")
 
 (defconst pivotal-states `("unstarted" "started" "finished" "delivered" "accepted" "rejected")
