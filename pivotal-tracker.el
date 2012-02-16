@@ -3,7 +3,7 @@
 ;; Author: John Andrews
 ;; URL: http://github.com/jxa/pivotal-tracker
 ;; Created: 2010.11.14
-;; Version: 1.0.0
+;; Version: 1.0.1
 
 ;; This file is not part of GNU Emacs.
 
@@ -37,7 +37,8 @@
 (require 'url)
 
 (defgroup pivotal nil
-  "Pivotal Tracker")
+  "Pivotal Tracker"
+  :group 'external)
 
 (defcustom pivotal-api-token ""
   "API key found on the /profile page of pivotal tracker"
@@ -260,7 +261,7 @@
     (url-retrieve url callback)))
 
 (defun assert-pivotal-api-token ()
-  (assert (not (string-equal "" pivotal-api-token)) t "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
+  (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
 
 (defun pivotal-get-xml-from-current-buffer ()
   (let ((xml (cdr (xml-parse-fragment))))
@@ -425,9 +426,9 @@ Owned By:     %s
 (defun pivotal-comments (story)
   (let ((notes (pivotal-xml-collection story `(notes note)))
         (comments ""))
-    (mapcar (lambda (note)
-              (setq comments (concat comments (pivotal-format-comment note))))
-            notes)
+    (mapc (lambda (note)
+            (setq comments (concat comments (pivotal-format-comment note))))
+          notes)
     comments))
 
 (defun pivotal-format-comment (note)
