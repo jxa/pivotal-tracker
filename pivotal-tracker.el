@@ -1,7 +1,9 @@
 ;;; pivotal-tracker.el --- Interact with Pivotal Tracker through its API
 
-;; Author: John Andrews <john.m.andrews@gmail.com>
+;; Author: John Andrews
+;; URL: http://github.com/jxa/pivotal-tracker
 ;; Created: 2010.11.14
+;; Version: 1.0.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -20,15 +22,14 @@
 
 ;;; Commentary:
 
+;; Pivotal Tracker Mode provides a mode and functions for interacting
+;; with Pivotal Tracker through its API.
+;; It is designed to give most of the functionality that is important to a developer.
+
 ;; Before using the tracker you must customize your pivotal API key.
 ;; You can obtain the key from the 'My Profile' link in the Pivotal Tracker
 ;; web application.
 ;; M-x customize-group RET pivotal RET
-
-;; Issues + Feature Requests
-
-;; Development is hosted on github
-;; https://github.com/jxa/pivotal-tracker.git
 
 ;;; Code:
 
@@ -437,38 +438,4 @@ Owned By:     %s
 
 (provide 'pivotal-tracker)
 
-
-
-
-;;;;;;;;; TEST CODE
-
-
-(when nil
-
-  (global-set-key (kbd "C-=") (lambda () (interactive) (message "Point: %S. Story: %S" (point) (get-text-property (point) 'pivotal-story-id))))
-
-  (defun load-test-xml (file)
-    (with-current-buffer (find-file-noselect file)
-      (let ((xml (cdr (xml-parse-fragment))))
-        (kill-buffer)
-        xml)))
-
-  (let* ((xml (load-test-xml "iterations.xml")))
-    (pivotal-comments (first (pivotal-extract-stories-from-iteration-xml xml))))
-
-  (let ((xml (load-test-xml "iterations.xml")))
-    (pivotal-xml-collection (first xml) `(iteration stories story notes note)))
-
-  (defun pivotal-test-callback (status)
-    (message "%s" status))
-
-  (pivotal-api (pivotal-url "")
-               "GET"
-               'pivotal-status-callback)
-
-  (defun testr (i)
-    (message "%s" i))
-
-  (mapc 'testr `(one two three))
-
-  )
+;;; pivotal-tracker.el ends here
