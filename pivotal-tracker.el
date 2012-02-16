@@ -36,14 +36,16 @@
 (require 'xml)
 (require 'url)
 
-(defgroup pivotal nil
-  "Pivotal Tracker"
-  :group 'external)
+;;;###autoload
+(progn
+  (defgroup pivotal nil
+    "Pivotal Tracker"
+    :group 'external)
 
-(defcustom pivotal-api-token ""
-  "API key found on the /profile page of pivotal tracker"
-  :group 'pivotal
-  :type 'string)
+  (defcustom pivotal-api-token ""
+    "API key found on the /profile page of pivotal tracker"
+    :group 'pivotal
+    :type 'string))
 
 (defconst pivotal-base-url "https://www.pivotaltracker.com/services/v3"
   "format string to use when creating endpoint urls")
@@ -58,6 +60,7 @@
 
 ;;;;;;;; INTERACTIVE USER FUNS
 
+;;;###autoload
 (defun pivotal ()
   "launch pivotal-projects window, or just switch to it"
   (interactive)
@@ -66,6 +69,7 @@
         (switch-to-buffer buffer)
       (pivotal-get-projects))))
 
+;;;###autoload
 (defun pivotal-get-projects ()
   "show a buffer of all projects you have access to"
   (interactive)
