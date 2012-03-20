@@ -353,6 +353,7 @@
 Status:       %s
 Requested By: %s
 Owned By:     %s
+Labels:       %s
 --- Description
 %s
 --- Comments
@@ -364,6 +365,7 @@ Owned By:     %s
           (pivotal-story-attribute story 'current_state)
           (pivotal-story-attribute story 'requested_by)
           (pivotal-story-attribute story 'owned_by)
+          (pivotal-story-attribute story 'labels)
           (pivotal-story-attribute story 'description)
           (pivotal-comments story)))
 
