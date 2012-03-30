@@ -376,9 +376,6 @@
 (defun pivotal-mark-story (min max story-id)
   (put-text-property min max 'pivotal-story-id story-id))
 
-(defun pivotal-mark-task (min max task-id)
-  (put-text-property min max 'pivotal-task-id task-id))
-
 (defun pivotal-mark-invisibility (min max)
   (let ((overlay (make-overlay min max)))
     (overlay-put overlay 'invisible (pivotal-story-at-point min))))
@@ -401,12 +398,6 @@
     (string-match "pivotal-\\([0-9]+\\)" story-str)
     (match-string 1 story-str)))
 
-(defun pivotal-task-at-point (&optional position)
-  (let* ((buf-point (if position position (point)))
-         (task-id (get-text-property buf-point 'pivotal-task-id))
-         (invis-id (pivotal-invisibility-id task-id)))
-    invis-id))
-
 (defun pivotal-task-id-at-point (&optional position)
   (save-excursion
     (beginning-of-line)
@@ -417,10 +408,6 @@
             (number-to-string (number-at-point)))
       (t (beep)
         (message "%s" "Could not find task at point")))))
-  ;; (let ((task-sym (pivotal-task-at-point position))
-  ;;       (task-str (symbol-name task-sym)))
-  ;;   (string-match "pivotal-\\([0-9]+\\)" task-str)
-  ;;   (match-string 1 task-str)))
 
 (defun pivotal-format-story (story)
   (format "
