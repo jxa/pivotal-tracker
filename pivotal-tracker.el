@@ -366,7 +366,10 @@
       (goto-char story-beginning)
       (re-search-forward "--- Comments")
       (forward-line -1)
-      (insert task))))
+      (let ((begin-of-task (point)))
+        (insert task)
+        ;; Mark this new line has belonging to the story
+        (pivotal-mark-story begin-of-task (point) story-id)))))
             
            
 
