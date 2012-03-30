@@ -224,7 +224,7 @@
 (defun pivotal-check-task-callback (status)
   (let ((xml (pivotal-get-xml-from-current-buffer)))
     (if (eq :error (car status))
-      (message "Error: %s" (pivotal-parse-errors xml))
+        (message "Error: %s" (pivotal-parse-errors xml))
       (with-current-buffer (get-buffer-create "*pivotal-iteration*")
         (let* ((task (car xml))
                 (task-id (pivotal-element-value task 'id)))
