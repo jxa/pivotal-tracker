@@ -32,6 +32,8 @@ web application. Once you have the key, customize it.
 **  example: pressing '2' followed by pressing 'E' will assign a 2 pt estimate for current story
 * 'C' will prompt for a new comment
 * 'S' will prompt for new status
+* 'T' will prompt for a new task
+* 'F' will mark the task (not the story) under the cursor as finished
 
 ## Issues & Feature Requests
 
