@@ -160,6 +160,21 @@
                'pivotal-add-comment-callback
                (format "<note><text>%s</text></note>" (xml-escape-string comment))))
 
+(defun pivotal-add-task (task)
+  "prompt user for a task and add it to the current story"
+  (interactive "sAdd Task: ")
+  (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point) "tasks")
+               "POST"
+               'pivotal-add-task-callback
+               (format "<task><description>%s</description></task>" (xml-escape-string task))))
+    
+(defun pivotal-check-task ()
+  "marks current task as done"
+  (interactive)
+  (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point) "tasks" (pivotal-task-id-at-point))
+               "PUT"
+               'pivotal-check-task-callback
+               (format "<task><complete>true</complete></task>")))
 
 ;;;;;;;; CALLBACKS
 
@@ -200,6 +215,29 @@
     (with-current-buffer (get-buffer-create "*pivotal-iteration*")
       (pivotal-append-to-current-story comment))))
 
+(defun pivotal-add-task-callback (status)
+  (let* ((xml (pivotal-get-xml-from-current-buffer))
+         (task (pivotal-format-task (car xml))))
+    (with-current-buffer (get-buffer-create "*pivotal-iteration*")
+      (pivotal-append-task-to-current-story task))))
+
+(defun pivotal-check-task-callback (status)
+  (let ((xml (pivotal-get-xml-from-current-buffer)))
+    (if (eq :error (car status))
+        (message "Error: %s" (pivotal-parse-errors xml))
+      (with-current-buffer (get-buffer-create "*pivotal-iteration*")
+        (let* ((task (car xml))
+                (task-id (pivotal-element-value task 'id)))
+          (save-excursion
+            (beginning-of-buffer)
+            (re-search-forward (concat "ID:#" task-id))
+            (beginning-of-line)
+            ;; Looking at [ ]
+            (forward-char 1)
+            (delete-char 1)
+            (insert "X")))))))
+
+
 (defun pivotal-parse-errors (xml)
   (mapconcat (lambda (error)
                (car (last error)))
@@ -233,6 +271,8 @@
   (define-key pivotal-mode-map (kbd "C") 'pivotal-add-comment)
   (define-key pivotal-mode-map (kbd "S") 'pivotal-set-status)
   (define-key pivotal-mode-map (kbd "L") 'pivotal)
+  (define-key pivotal-mode-map (kbd "T") 'pivotal-add-task)
+  (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
   (setq font-lock-defaults '((pivotal-font-lock-keywords) nil t))
   (font-lock-mode))
 
@@ -317,6 +357,22 @@
       (pivotal-mark-story story-end new-end story-id)
       (pivotal-mark-invisibility story-end new-end))))
 
+(defun pivotal-append-task-to-current-story (task)
+  (progn
+    (pivotal-show)
+    (let* ((story-id (pivotal-story-id-at-point (point)))
+            (bounds (pivotal-story-boundaries (point)))
+            (story-beginning (first bounds)))
+      (goto-char story-beginning)
+      (re-search-forward "--- Comments")
+      (forward-line -1)
+      (let ((begin-of-task (point)))
+        (insert task)
+        ;; Mark this new line has belonging to the story
+        (pivotal-mark-story begin-of-task (point) story-id)))))
+            
+           
+
 (defun pivotal-invisibility-id (story-id)
   (intern (concat "pivotal-" story-id)))
 
@@ -345,6 +401,17 @@
     (string-match "pivotal-\\([0-9]+\\)" story-str)
     (match-string 1 story-str)))
 
+(defun pivotal-task-id-at-point (&optional position)
+  (save-excursion
+    (beginning-of-line)
+    (forward-char 4)
+    (cond ((looking-at "Task")
+            (re-search-forward "ID:#\\([0-9]\\)")
+            (forward-char 3)
+            (number-to-string (number-at-point)))
+      (t (beep)
+        (message "%s" "Could not find task at point")))))
+
 (defun pivotal-format-story (story)
   (format "
 %s
@@ -355,6 +422,8 @@ Requested By: %s
 Owned By:     %s
 Labels:       %s
 --- Description
+%s
+--- Tasks
 %s
 --- Comments
 %s
@@ -367,6 +436,7 @@ Labels:       %s
           (pivotal-story-attribute story 'owned_by)
           (pivotal-story-attribute story 'labels)
           (pivotal-story-attribute story 'description)
+          (pivotal-tasks story)
           (pivotal-comments story)))
 
 (defun pivotal-format-story-oneline (story)
@@ -442,6 +512,26 @@ Labels:       %s
           (pivotal-element-value note 'text)
           (pivotal-element-value note 'author)
           (pivotal-element-value note 'noted_at)))
+
+(defun pivotal-tasks (story)
+  (let ((tasks (pivotal-xml-collection story `(tasks task)))
+        (tasks-string ""))
+    (mapc (lambda (task)
+            (setq tasks-string (concat tasks-string (pivotal-format-task task))))
+          tasks)
+    tasks-string))
+
+
+
+(defun pivotal-format-task (task)
+  (format "[%s] Task %s (ID:#%s) -- %s created at %s\n"
+          (if (string= (pivotal-element-value task 'complete) "true")
+              "X"
+            " ")
+          (pivotal-element-value task 'position)
+          (pivotal-element-value task 'id)
+          (pivotal-element-value task 'description)
+          (pivotal-element-value task 'created_at)))
 
 (provide 'pivotal-tracker)
 
