@@ -260,9 +260,15 @@
   "Face for iteration heading"
   :group 'pivotal)
 
+(defface pivotal-section-face
+  '((t :underline t))
+  "Face for iteration heading"
+  :group 'pivotal)
+
 (defconst pivotal-font-lock-keywords
   `(("^\\(\\[.*?\\]\\)+" 0 font-lock-doc-face)
-    ("^-.*-$" . 'pivotal-title-face)))
+    ("^-.*-$" . 'pivotal-title-face)
+    ("^--- [a-zA-Z]+$" . 'pivotal-section-face)))
 
 (define-derived-mode pivotal-mode fundamental-mode "Pivotal"
   (suppress-keymap pivotal-mode-map)
@@ -425,22 +431,21 @@
         (message "%s" "Could not find task at point")))))
 
 (defun pivotal-format-story (story)
-  (format "
-%s
----
-%s #%s
+  (format "%s #%s
 Status:       %s
 Requested By: %s
 Owned By:     %s
 Labels:       %s
+
 --- Description
 %s
+
 --- Tasks
 %s
+
 --- Comments
 %s
 "
-          (pivotal-story-attribute story 'name)
           (pivotal-story-attribute story 'story_type)
           (pivotal-story-attribute story 'id)
           (pivotal-story-attribute story 'current_state)
