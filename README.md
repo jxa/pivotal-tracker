@@ -4,6 +4,10 @@ Pivotal Tracker Mode provides a mode and functions for interacting with Pivotal 
 It is designed to give most of the functionality that is important to a developer.
 It is not an attempt to replace every feature of the web interface.
 
+## Installation
+
+You can install via [marmalade](http://marmalade-repo.org/packages/pivotal-tracker) or by cloning the repo.
+
 ## Initial Setup
 
 Before using the tracker you must customize your pivotal API key.
@@ -53,4 +57,3 @@ General Public License for more details.
 For a copy of the GNU General Public License, search the Internet,
 or write to the Free Software Foundation, Inc., 59 Temple Place,
 Suite 330, Boston, MA 02111-1307 USA
-
