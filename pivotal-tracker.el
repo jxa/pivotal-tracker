@@ -237,7 +237,7 @@
         (let* ((task (car xml))
                 (task-id (pivotal-element-value task 'id)))
           (save-excursion
-            (beginning-of-buffer)
+            (goto-char (point-min))
             (re-search-forward (concat "ID:#" task-id))
             (beginning-of-line)
             ;; Looking at [ ]
@@ -518,7 +518,7 @@ Labels:       %s
 
 (defun pivotal-iteration-date (xml attr)
   (first (split-string
-          (third (first (pivotal-xml-collection (car iteration-xml) `(iteration ,attr))))
+          (third (first (pivotal-xml-collection (car xml) `(iteration ,attr))))
           " ")))
 
 (defun pivotal-comments (story)
