@@ -525,10 +525,12 @@ Labels:       %s
     comments))
 
 (defun pivotal-format-comment (note)
-  (format "%s  --  %s at %s\n"
-          (pivotal-element-value note 'text)
-          (pivotal-element-value note 'author)
-          (pivotal-element-value note 'noted_at)))
+  (let ((text (pivotal-element-value note 'text))
+        (author (pivotal-element-value note 'author))
+        (created-at (pivotal-element-value note 'noted_at)))
+    (if created-at
+        (setq created-at (substring created-at 5 10)))
+    (format "%s  --  %s on %s\n" text author created-at)))
 
 (defun pivotal-tasks (story)
   (let ((tasks (pivotal-xml-collection story `(tasks task)))
