@@ -539,14 +539,13 @@ Labels:       %s
     tasks-string))
 
 (defun pivotal-format-task (task)
-  (format "[%s] Task %s (ID:#%s) -- %s created at %s\n"
+  (format "[%s] Task %s (ID:#%s) -- %s\n"
           (if (string= (pivotal-element-value task 'complete) "true")
               "X"
             " ")
           (pivotal-element-value task 'position)
           (pivotal-element-value task 'id)
-          (pivotal-element-value task 'description)
-          (pivotal-element-value task 'created_at)))
+          (pivotal-element-value task 'description)))
 
 (provide 'pivotal-tracker)
 
