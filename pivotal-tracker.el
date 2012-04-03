@@ -255,11 +255,14 @@
 
 ;;;;;;;; MODE DEFINITIONS
 
-
+(defface pivotal-title-face
+  '((t :height 1.2 :underline t))
+  "Face for iteration heading"
+  :group 'pivotal)
 
 (defconst pivotal-font-lock-keywords
   `(("^\\(\\[.*?\\]\\)+" 0 font-lock-doc-face)
-    ("^\\!\\(.*?\\)\\!$") 0 font-lock-keyword-face))
+    ("^-.*-$" . 'pivotal-title-face)))
 
 (define-derived-mode pivotal-mode fundamental-mode "Pivotal"
   (suppress-keymap pivotal-mode-map)
@@ -280,7 +283,7 @@
   (define-key pivotal-mode-map (kbd "L") 'pivotal)
   (define-key pivotal-mode-map (kbd "T") 'pivotal-add-task)
   (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
-  (setq font-lock-defaults '((pivotal-font-lock-keywords) nil t))
+  (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
 
 (define-derived-mode pivotal-project-mode fundamental-mode "PivotalProjects"
