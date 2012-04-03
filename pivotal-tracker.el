@@ -167,7 +167,7 @@
                "POST"
                'pivotal-add-task-callback
                (format "<task><description>%s</description></task>" (xml-escape-string task))))
-    
+
 (defun pivotal-check-task ()
   "marks current task as done"
   (interactive)
@@ -185,7 +185,15 @@
       (pivotal-mode)
       (delete-region (point-min) (point-max))
       (switch-to-buffer (current-buffer))
-      (pivotal-insert-iteration xml))))
+
+      ;; for some reason trying to load an iteration that doesn't
+      ;; exist returns the following xml
+      ;; ((nil-classes ((type . array)))
+      ;;  - Peer has closed the GnuTLS connection
+      ;;  )
+      (if (eq 'nil-classes (first (first xml)))
+          (insert "No stories in this iteration yet")
+        (pivotal-insert-iteration xml)))))
 
 (defun pivotal-projects-callback (status)
   (let ((xml (pivotal-get-xml-from-current-buffer)))
@@ -236,7 +244,6 @@
             (forward-char 1)
             (delete-char 1)
             (insert "X")))))))
-
 
 (defun pivotal-parse-errors (xml)
   (mapconcat (lambda (error)
@@ -329,8 +336,10 @@
 (defun pivotal-insert-iteration (iteration-xml)
   "extract story information from xml and insert it into current buffer"
   (insert (if (= pivotal-current-iteration-number *pivotal-iteration*)
-              "! CURRENT ITERATION !\n"
-            (format "! ITERATION %s !\n" *pivotal-iteration*)))
+              (format "- Current Iteration - Ending %s -\n"
+                      (pivotal-iteration-date iteration-xml 'finish))
+            (format "- Iteration Starting %s -\n"
+                    (pivotal-iteration-date iteration-xml 'start))))
   (mapc 'pivotal-insert-story
         (pivotal-extract-stories-from-iteration-xml iteration-xml)))
 
@@ -370,8 +379,8 @@
         (insert task)
         ;; Mark this new line has belonging to the story
         (pivotal-mark-story begin-of-task (point) story-id)))))
-            
-           
+
+
 
 (defun pivotal-invisibility-id (story-id)
   (intern (concat "pivotal-" story-id)))
@@ -499,6 +508,11 @@ Labels:       %s
           structure)
     results))
 
+(defun pivotal-iteration-date (xml attr)
+  (first (split-string
+          (third (first (pivotal-xml-collection (car iteration-xml) `(iteration ,attr))))
+          " ")))
+
 (defun pivotal-comments (story)
   (let ((notes (pivotal-xml-collection story `(notes note)))
         (comments ""))
@@ -520,8 +534,6 @@ Labels:       %s
             (setq tasks-string (concat tasks-string (pivotal-format-task task))))
           tasks)
     tasks-string))
-
-
 
 (defun pivotal-format-task (task)
   (format "[%s] Task %s (ID:#%s) -- %s created at %s\n"
