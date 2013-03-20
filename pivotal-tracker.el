@@ -324,7 +324,9 @@
   (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
 
 (defun pivotal-get-xml-from-current-buffer ()
-  (let ((xml (cdr (xml-parse-fragment))))
+  (let ((xml (if (functionp 'xml-parse-fragment)
+                 (cdr (xml-parse-fragment))
+               (xml-parse-region))))
     (kill-buffer)
     xml))
 
