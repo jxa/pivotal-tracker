@@ -330,7 +330,7 @@
 (defun pivotal-clear-headers (buffer)
   (display-buffer (current-buffer))
   ;; What am I? An animal!?
-  (sleep-for 10)
+  ;; (sleep-for 1)
   (re-search-forward "^$")
   (delete-region (point-min) (point)))
 
@@ -405,6 +405,7 @@
                             t
                             nil
                             'pivotal-story-estimate-history))))
+  (setq *charnock* (list name description owner requester estimate))
   (let ((project-members (mapcar (lambda (project-member) `(,(cdr (assoc 'name (assoc 'person project-member))) . ,(cdr (assoc 'id (assoc 'person project-member))))) (pivotal-get-project-members))))
     (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "stories")
                       "POST"
@@ -414,6 +415,12 @@
                                          :requested_by_id (cdr (assoc requester project-members))
                                          :estimate        estimate)))
     (message "Story added!")))
+
+(pivotal-add-story "From Emacs" "Oh boi!" "Tim Visher" "Tim Visher" 3)
+
+*charnock*
+
+;; (mapcar 'kill-buffer (cl-remove-if (lambda (buffer) (not (string-match "*http" (buffer-name buffer)))) (buffer-list)))
 
 (defun assert-pivotal-api-token ()
   (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
