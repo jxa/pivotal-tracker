@@ -35,6 +35,7 @@
 
 (require 'xml)
 (require 'url)
+(require 'json)
 
 ;;;###autoload
 (progn
@@ -313,12 +314,48 @@
          pivotal-base-url
          (mapcar (lambda (part) (concat "/" part)) parts-of-url)))
 
+(defun pivotal-v5-url (&rest parts-of-url)
+  (let ((v3-url (apply 'concat
+                       pivotal-base-url
+                       (mapcar (lambda (part) (concat "/" part)) parts-of-url))))
+   (replace-regexp-in-string "/v3/" "/v5/" v3-url)))
+
 (defun pivotal-api (url method callback &optional xml-data)
   (let ((url-request-method method)
         (url-request-data xml-data)
         (url-request-extra-headers `(("X-TrackerToken" . ,pivotal-api-token)
                                      ("Content-Type" . "application/xml"))))
     (url-retrieve url callback)))
+
+(defun pivotal-clear-headers (buffer)
+  (display-buffer (current-buffer))
+  (re-search-forward "^$")
+  (delete-region (point-min) (point)))
+
+(defun pivotal-json-api (url method &optional json-data callback)
+  (let ((url-request-method method)
+        (url-request-data json-data)
+        (url-request-extra-headers `(("X-TrackerToken" . ,pivotal-api-token)
+                                     ("Content-Type" . "application/json"))))
+    (if callback
+        (url-retrieve url callback)
+      (url-retrieve-synchronously url))))
+
+(defun pivotal-get-json-from-current-buffer ()
+  (let ((json (json-read-from-string (buffer-substring-no-properties (point-min) (point-max)))))
+    (kill-buffer)
+    json))
+
+(defun pivotal-get-id-for-user (user-name-regex)
+  (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "memberships")
+                                         "GET")
+    (pivotal-clear-headers (current-buffer))
+    (let ((project-members (pivotal-get-json-from-current-buffer)))
+      (cl-some (lambda (r)
+                 (let ((name (cdr (assoc 'name (assoc 'person r)))))
+                   (if (string-match user-name-regex name)
+                       (cdr (assoc 'id (assoc 'person r))))))
+               project-members))))
 
 (defun assert-pivotal-api-token ()
   (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
