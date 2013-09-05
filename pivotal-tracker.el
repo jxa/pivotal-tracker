@@ -289,6 +289,7 @@
   (define-key pivotal-mode-map (kbd "S") 'pivotal-set-status)
   (define-key pivotal-mode-map (kbd "L") 'pivotal)
   (define-key pivotal-mode-map (kbd "T") 'pivotal-add-task)
+  (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)
   (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
