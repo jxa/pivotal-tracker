@@ -329,6 +329,8 @@
 
 (defun pivotal-clear-headers (buffer)
   (display-buffer (current-buffer))
+  ;; What am I? An animal!?
+  (sleep-for 10)
   (re-search-forward "^$")
   (delete-region (point-min) (point)))
 
@@ -343,19 +345,75 @@
 
 (defun pivotal-get-json-from-current-buffer ()
   (let ((json (json-read-from-string (buffer-substring-no-properties (point-min) (point-max)))))
-    (kill-buffer)
+    ;; (kill-buffer)
     json))
 
-(defun pivotal-get-id-for-user (user-name-regex)
+(defun pivotal-get-project-members ()
   (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "memberships")
                                          "GET")
     (pivotal-clear-headers (current-buffer))
-    (let ((project-members (pivotal-get-json-from-current-buffer)))
-      (cl-some (lambda (r)
-                 (let ((name (cdr (assoc 'name (assoc 'person r)))))
-                   (if (string-match user-name-regex name)
-                       (cdr (assoc 'id (assoc 'person r))))))
-               project-members))))
+    (pivotal-get-json-from-current-buffer)))
+
+(defun pivotal-get-id-for-user (user-name-regex)
+  (let ((project-members (pivotal-get-project-members)))
+    (cl-some (lambda (r)
+               (let ((name (cdr (assoc 'name (assoc 'person r)))))
+                 (if (string-match user-name-regex name)
+                     (cdr (assoc 'id (assoc 'person r))))))
+             project-members)))
+
+(defun pivotal-get-project (project-id)
+  (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" project-id)
+                                         "GET")
+    (pivotal-clear-headers (current-buffer))
+    (pivotal-get-json-from-current-buffer)))
+
+(defun pivotal-get-estimate-scale ()
+  (let ((project (pivotal-get-project *pivotal-current-project*)))))
+
+(defvar pivotal-story-name-history '())
+
+(defvar pivotal-story-description-history '())
+
+(defvar pivotal-story-owner-history '())
+
+(defvar pivotal-story-requester-history '())
+
+(defvar pivotal-story-estimate-history '())
+
+(defun pivotal-add-story (name description owner requester estimate)
+  (interactive
+   (let ((project-members (mapcar (lambda (project-member) `(,(cdr (assoc 'name (assoc 'person project-member))) . ,(cdr (assoc 'id (assoc 'person project-member))))) (pivotal-get-project-members)))
+         (estimate-scale  (split-string (cdr (assoc 'point_scale (pivotal-get-project *pivotal-current-project*))) ",")))
+     (list (read-string "Name: " nil 'pivotal-story-name-history)
+           (read-string "Description: " nil 'pivotal-story-description-history)
+           (completing-read "Owner: "
+                            project-members
+                            nil
+                            t
+                            nil
+                            'pivotal-story-owner-history)
+           (completing-read "Requester: "
+                            project-members
+                            nil
+                            t
+                            nil
+                            'pivotal-story-requester-history)
+           (completing-read "Estimate: "
+                            estimate-scale
+                            nil
+                            t
+                            nil
+                            'pivotal-story-estimate-history))))
+  (let ((project-members (mapcar (lambda (project-member) `(,(cdr (assoc 'name (assoc 'person project-member))) . ,(cdr (assoc 'id (assoc 'person project-member))))) (pivotal-get-project-members))))
+    (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "stories")
+                      "POST"
+                      (json-encode (list :name            name
+                                         :description     description
+                                         :owned_by_id     (cdr (assoc owner project-members))
+                                         :requested_by_id (cdr (assoc requester project-members))
+                                         :estimate        estimate)))
+    (message "Story added!")))
 
 (defun assert-pivotal-api-token ()
   (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
