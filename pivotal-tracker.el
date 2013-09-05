@@ -328,9 +328,6 @@
     (url-retrieve url callback)))
 
 (defun pivotal-clear-headers (buffer)
-  (display-buffer (current-buffer))
-  ;; What am I? An animal!?
-  ;; (sleep-for 1)
   (mail-narrow-to-head)
   (delete-region (point-min) (point-max))
   (widen))
@@ -345,18 +342,20 @@
       (url-retrieve-synchronously url))))
 
 (defun pivotal-get-json-from-current-buffer ()
-  (while (not (condition-case nil
+  (let ((json (condition-case nil
                   (json-read-from-string (buffer-substring-no-properties (point-min) (point-max)))
-                (error nil))))
-  (let ((json (json-read-from-string (buffer-substring-no-properties (point-min) (point-max)))))
-    ;; (kill-buffer)
+                (error :reissue))))
+    (kill-buffer)
     json))
 
 (defun pivotal-get-project-members ()
   (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "memberships")
                                          "GET")
     (pivotal-clear-headers (current-buffer))
-    (pivotal-get-json-from-current-buffer)))
+    (let ((project-members (pivotal-get-json-from-current-buffer)))
+      (if (eq :reissue project-members)
+          (pivotal-get-project-members)
+        project-members))))
 
 (defun pivotal-get-id-for-user (user-name-regex)
   (let ((project-members (pivotal-get-project-members)))
@@ -370,7 +369,10 @@
   (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" project-id)
                                          "GET")
     (pivotal-clear-headers (current-buffer))
-    (pivotal-get-json-from-current-buffer)))
+    (let ((project (pivotal-get-json-from-current-buffer)))
+      (if (eq :reissue project)
+          (pivotal-get-project project-id)
+        project))))
 
 (defun pivotal-get-estimate-scale ()
   (let ((project (pivotal-get-project *pivotal-current-project*)))))
