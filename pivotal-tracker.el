@@ -331,8 +331,9 @@
   (display-buffer (current-buffer))
   ;; What am I? An animal!?
   ;; (sleep-for 1)
-  (re-search-forward "^$")
-  (delete-region (point-min) (point)))
+  (mail-narrow-to-head)
+  (delete-region (point-min) (point-max))
+  (widen))
 
 (defun pivotal-json-api (url method &optional json-data callback)
   (let ((url-request-method method)
@@ -344,6 +345,9 @@
       (url-retrieve-synchronously url))))
 
 (defun pivotal-get-json-from-current-buffer ()
+  (while (not (condition-case nil
+                  (json-read-from-string (buffer-substring-no-properties (point-min) (point-max)))
+                (error nil))))
   (let ((json (json-read-from-string (buffer-substring-no-properties (point-min) (point-max)))))
     ;; (kill-buffer)
     json))
