@@ -347,13 +347,13 @@
     (kill-buffer)
     json))
 
-(defun pivotal-get-project-members ()
-  (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "memberships")
+(defun pivotal-get-project-members (project-id)
+  (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" project-id "memberships")
                                          "GET")
     (pivotal-clear-headers (current-buffer))
     (let ((project-members (pivotal-get-json-from-current-buffer)))
       (if (eq :reissue project-members)
-          (pivotal-get-project-members)
+          (pivotal-get-project-members project-id)
         project-members))))
 
 (defun pivotal-get-project (project-id)
@@ -365,8 +365,11 @@
           (pivotal-get-project project-id)
         project))))
 
-(defun pivotal-get-estimate-scale ()
-  (let ((project (pivotal-get-project *pivotal-current-project*)))))
+(defun pivotal-get-estimate-scale (project-id)
+  (let* ((project             (pivotal-get-project project-id))
+         (point-scale-str     (cdr (assoc 'point_scale project)))
+         (estimate-scale-strs (split-string point-scale-str ",")))
+    estimate-scale-strs))
 
 (defvar pivotal-story-name-history '())
 
@@ -378,28 +381,36 @@
 
 (defvar pivotal-story-estimate-history '())
 
+(defun pivotal-project-member->member-name-id-association (project-member)
+  `(,(cdr (assoc 'name (assoc 'person project-member)))
+    .
+    ,(cdr (assoc 'id (assoc 'person project-member)))))
+
+(defun pivotal-project->member-name-id-alist (project-id)
+  (let ((project-members (pivotal-get-project-members project-id)))
+    (mapcar 'pivotal-project-member->member-name-id-association
+            (pivotal-get-project-members project-id))))
+
 (defun pivotal-add-story (name description owner-id requester-id estimate)
   (interactive
-   (let ((project-members (mapcar (lambda (project-member)
-                                    `(,(cdr (assoc 'name (assoc 'person project-member))) . ,(cdr (assoc 'id (assoc 'person project-member)))))
-                                  (pivotal-get-project-members)))
-         (estimate-scale  (split-string (cdr (assoc 'point_scale (pivotal-get-project *pivotal-current-project*))) ",")))
+   (let ((member-name-id-alist (pivotal-project->member-name-id-alist *pivotal-current-project*))
+         (estimate-scale       (pivotal-get-estimate-scale *pivotal-current-project*)))
      (list (read-string "Name: " nil 'pivotal-story-name-history)
            (read-string "Description: " nil 'pivotal-story-description-history)
            (cdr (assoc (completing-read "Owner: "
-                                        project-members
+                                        member-name-id-alist
                                         nil
                                         t
                                         nil
                                         'pivotal-story-owner-history)
-                       project-members))
+                       member-name-id-alist))
            (cdr (assoc (completing-read "Requester: "
-                                        project-members
+                                        member-name-id-alist
                                         nil
                                         t
                                         nil
                                         'pivotal-story-requester-history)
-                       project-members))
+                       member-name-id-alist))
            (string-to-number (completing-read "Estimate: "
                                               estimate-scale
                                               nil
