@@ -393,38 +393,35 @@
          (estimate-scale  (split-string (cdr (assoc 'point_scale (pivotal-get-project *pivotal-current-project*))) ",")))
      (list (read-string "Name: " nil 'pivotal-story-name-history)
            (read-string "Description: " nil 'pivotal-story-description-history)
-           (completing-read "Owner: "
-                            project-members
-                            nil
-                            t
-                            nil
-                            'pivotal-story-owner-history)
-           (completing-read "Requester: "
-                            project-members
-                            nil
-                            t
-                            nil
-                            'pivotal-story-requester-history)
-           (completing-read "Estimate: "
-                            estimate-scale
-                            nil
-                            t
-                            nil
-                            'pivotal-story-estimate-history))))
-  (setq *charnock* (list name description owner requester estimate))
-  (let ((project-members (mapcar (lambda (project-member) `(,(cdr (assoc 'name (assoc 'person project-member))) . ,(cdr (assoc 'id (assoc 'person project-member))))) (pivotal-get-project-members))))
-    (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "stories")
-                      "POST"
-                      (json-encode (list :name            name
-                                         :description     description
-                                         :owned_by_id     (cdr (assoc owner project-members))
-                                         :requested_by_id (cdr (assoc requester project-members))
-                                         :estimate        estimate)))
-    (message "Story added!")))
+           (cdr (assoc (completing-read "Owner: "
+                                        project-members
+                                        nil
+                                        t
+                                        nil
+                                        'pivotal-story-owner-history)
+                       project-members))
+           (cdr (assoc (completing-read "Requester: "
+                                        project-members
+                                        nil
+                                        t
+                                        nil
+                                        'pivotal-story-requester-history)
+                       project-members))
+           (string-to-number (completing-read "Estimate: "
+                                              estimate-scale
+                                              nil
+                                              t
+                                              nil
+                                              'pivotal-story-estimate-history)))))
+  (kill-buffer (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "stories")
+                                 "POST"
+                                 (json-encode (list :name            name
+                                                    :description     description
+                                                    :owned_by_id     owner
+                                                    :requested_by_id requester
+                                                    :estimate        estimate))))
+  (message "Story added!"))
 
-(pivotal-add-story "From Emacs" "Oh boi!" "Tim Visher" "Tim Visher" 3)
-
-*charnock*
 
 ;; (mapcar 'kill-buffer (cl-remove-if (lambda (buffer) (not (string-match "*http" (buffer-name buffer)))) (buffer-list)))
 
