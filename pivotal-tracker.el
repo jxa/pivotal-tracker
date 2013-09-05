@@ -356,14 +356,6 @@
           (pivotal-get-project-members)
         project-members))))
 
-(defun pivotal-get-id-for-user (user-name-regex)
-  (let ((project-members (pivotal-get-project-members)))
-    (cl-some (lambda (r)
-               (let ((name (cdr (assoc 'name (assoc 'person r)))))
-                 (if (string-match user-name-regex name)
-                     (cdr (assoc 'id (assoc 'person r))))))
-             project-members)))
-
 (defun pivotal-get-project (project-id)
   (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" project-id)
                                          "GET")
