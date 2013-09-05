@@ -387,9 +387,11 @@
 
 (defvar pivotal-story-estimate-history '())
 
-(defun pivotal-add-story (name description owner requester estimate)
+(defun pivotal-add-story (name description owner-id requester-id estimate)
   (interactive
-   (let ((project-members (mapcar (lambda (project-member) `(,(cdr (assoc 'name (assoc 'person project-member))) . ,(cdr (assoc 'id (assoc 'person project-member))))) (pivotal-get-project-members)))
+   (let ((project-members (mapcar (lambda (project-member)
+                                    `(,(cdr (assoc 'name (assoc 'person project-member))) . ,(cdr (assoc 'id (assoc 'person project-member)))))
+                                  (pivotal-get-project-members)))
          (estimate-scale  (split-string (cdr (assoc 'point_scale (pivotal-get-project *pivotal-current-project*))) ",")))
      (list (read-string "Name: " nil 'pivotal-story-name-history)
            (read-string "Description: " nil 'pivotal-story-description-history)
@@ -417,8 +419,8 @@
                                  "POST"
                                  (json-encode (list :name            name
                                                     :description     description
-                                                    :owned_by_id     owner
-                                                    :requested_by_id requester
+                                                    :owned_by_id     owner-id
+                                                    :requested_by_id requester-id
                                                     :estimate        estimate))))
   (message "Story added!"))
 
