@@ -426,9 +426,6 @@
                                                     :estimate        estimate))))
   (message "Story added!"))
 
-
-;; (mapcar 'kill-buffer (cl-remove-if (lambda (buffer) (not (string-match "*http" (buffer-name buffer)))) (buffer-list)))
-
 (defun assert-pivotal-api-token ()
   (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
 
