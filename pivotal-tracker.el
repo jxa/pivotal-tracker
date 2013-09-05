@@ -316,9 +316,7 @@
          (mapcar (lambda (part) (concat "/" part)) parts-of-url)))
 
 (defun pivotal-v5-url (&rest parts-of-url)
-  (let ((v3-url (apply 'concat
-                       pivotal-base-url
-                       (mapcar (lambda (part) (concat "/" part)) parts-of-url))))
+  (let ((v3-url (apply 'pivotal-url parts-of-url)))
    (replace-regexp-in-string "/v3/" "/v5/" v3-url)))
 
 (defun pivotal-api (url method callback &optional xml-data)
