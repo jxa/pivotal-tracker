@@ -35,6 +35,7 @@
 
 (require 'xml)
 (require 'url)
+(require 'json)
 
 ;;;###autoload
 (progn
@@ -288,6 +289,7 @@
   (define-key pivotal-mode-map (kbd "S") 'pivotal-set-status)
   (define-key pivotal-mode-map (kbd "L") 'pivotal)
   (define-key pivotal-mode-map (kbd "T") 'pivotal-add-task)
+  (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)
   (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
@@ -313,12 +315,116 @@
          pivotal-base-url
          (mapcar (lambda (part) (concat "/" part)) parts-of-url)))
 
+(defun pivotal-v5-url (&rest parts-of-url)
+  (let ((v3-url (apply 'pivotal-url parts-of-url)))
+   (replace-regexp-in-string "/v3/" "/v5/" v3-url)))
+
 (defun pivotal-api (url method callback &optional xml-data)
   (let ((url-request-method method)
         (url-request-data xml-data)
         (url-request-extra-headers `(("X-TrackerToken" . ,pivotal-api-token)
                                      ("Content-Type" . "application/xml"))))
     (url-retrieve url callback)))
+
+(defun pivotal-clear-headers (buffer)
+  (mail-narrow-to-head)
+  (delete-region (point-min) (point-max))
+  (widen))
+
+(defun pivotal-json-api (url method &optional json-data callback)
+  (let ((url-request-method method)
+        (url-request-data json-data)
+        (url-request-extra-headers `(("X-TrackerToken" . ,pivotal-api-token)
+                                     ("Content-Type" . "application/json"))))
+    (if callback
+        (url-retrieve url callback)
+      (url-retrieve-synchronously url))))
+
+(defun pivotal-get-json-from-current-buffer ()
+  (let ((json (condition-case nil
+                  (json-read-from-string (buffer-substring-no-properties (point-min) (point-max)))
+                (error :reissue))))
+    (kill-buffer)
+    json))
+
+(defun pivotal-get-project-members (project-id)
+  (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" project-id "memberships")
+                                         "GET")
+    (pivotal-clear-headers (current-buffer))
+    (let ((project-members (pivotal-get-json-from-current-buffer)))
+      (if (eq :reissue project-members)
+          (pivotal-get-project-members project-id)
+        project-members))))
+
+(defun pivotal-get-project (project-id)
+  (with-current-buffer (pivotal-json-api (pivotal-v5-url "projects" project-id)
+                                         "GET")
+    (pivotal-clear-headers (current-buffer))
+    (let ((project (pivotal-get-json-from-current-buffer)))
+      (if (eq :reissue project)
+          (pivotal-get-project project-id)
+        project))))
+
+(defun pivotal-get-estimate-scale (project-id)
+  (let* ((project             (pivotal-get-project project-id))
+         (point-scale-str     (cdr (assoc 'point_scale project)))
+         (estimate-scale-strs (split-string point-scale-str ",")))
+    estimate-scale-strs))
+
+(defvar pivotal-story-name-history '())
+
+(defvar pivotal-story-description-history '())
+
+(defvar pivotal-story-owner-history '())
+
+(defvar pivotal-story-requester-history '())
+
+(defvar pivotal-story-estimate-history '())
+
+(defun pivotal-project-member->member-name-id-association (project-member)
+  `(,(cdr (assoc 'name (assoc 'person project-member)))
+    .
+    ,(cdr (assoc 'id (assoc 'person project-member)))))
+
+(defun pivotal-project->member-name-id-alist (project-id)
+  (let ((project-members (pivotal-get-project-members project-id)))
+    (mapcar 'pivotal-project-member->member-name-id-association
+            (pivotal-get-project-members project-id))))
+
+(defun pivotal-add-story (name description owner-id requester-id estimate)
+  (interactive
+   (let ((member-name-id-alist (pivotal-project->member-name-id-alist *pivotal-current-project*))
+         (estimate-scale       (pivotal-get-estimate-scale *pivotal-current-project*)))
+     (list (read-string "Name: " nil 'pivotal-story-name-history)
+           (read-string "Description: " nil 'pivotal-story-description-history)
+           (cdr (assoc (completing-read "Owner: "
+                                        member-name-id-alist
+                                        nil
+                                        t
+                                        nil
+                                        'pivotal-story-owner-history)
+                       member-name-id-alist))
+           (cdr (assoc (completing-read "Requester: "
+                                        member-name-id-alist
+                                        nil
+                                        t
+                                        nil
+                                        'pivotal-story-requester-history)
+                       member-name-id-alist))
+           (string-to-number (completing-read "Estimate: "
+                                              estimate-scale
+                                              nil
+                                              t
+                                              nil
+                                              'pivotal-story-estimate-history)))))
+  (kill-buffer (pivotal-json-api (pivotal-v5-url "projects" *pivotal-current-project* "stories")
+                                 "POST"
+                                 (json-encode (list :name            name
+                                                    :description     description
+                                                    :owned_by_id     owner-id
+                                                    :requested_by_id requester-id
+                                                    :estimate        estimate))))
+  (message "Story added!"))
 
 (defun assert-pivotal-api-token ()
   (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
