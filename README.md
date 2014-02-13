@@ -38,6 +38,7 @@ web application. Once you have the key, customize it.
 * 'S' will prompt for new status
 * 'T' will prompt for a new task
 * 'F' will mark the task (not the story) under the cursor as finished
+* '+' adds a new story
 
 ## Issues & Feature Requests
 

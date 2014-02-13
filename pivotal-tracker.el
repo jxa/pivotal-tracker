@@ -3,7 +3,7 @@
 ;; Author: John Andrews
 ;; URL: http://github.com/jxa/pivotal-tracker
 ;; Created: 2010.11.14
-;; Version: 1.2.0
+;; Version: 1.3.0
 
 ;; This file is not part of GNU Emacs.
 
