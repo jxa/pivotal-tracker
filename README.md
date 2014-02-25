@@ -6,39 +6,48 @@ It is not an attempt to replace every feature of the web interface.
 
 ## Installation
 
-You can install via [marmalade](http://marmalade-repo.org/packages/pivotal-tracker) or by cloning the repo.
+You can install via [marmalade](http://marmalade-repo.org/packages/pivotal-tracker),
+[MELPA](http://melpa.milkbox.net/#/pivotal-tracker) or by cloning the repo.
 
 ## Initial Setup
 
-Before using the tracker you must customize your pivotal API key.
-You can obtain the key from the 'My Profile' link in the Pivotal Tracker
-web application. Once you have the key, customize it.
+Before using the tracker you must customize your pivotal API key. You can
+obtain the key from the [Profile](https://www.pivotaltracker.com/profile)
+link in the Pivotal Tracker web application. Once you have the key, customize it.
 
-  M-x customize-group RET pivotal RET
+Do it via **customize** mechanism:
+
+<kbd>M-x customize-group RET pivotal RET</kbd>
+
+or set it manually:
+
+```el
+(setq pivotal-api-token "your-secret-token")
+```
 
 ## Usage
 
 ### Projects View
 
-* M-x pivotal will display a list of your current projects
-* RET or '.' will load the current iteration for the given project
-* n and p move between lines, like dired mode
+* <kbd>M-x pivotal</kbd> will display a list of your current projects
+* <kbd>RET</kbd> or <kbd>.</kbd> will load the current iteration for the given project
+* <kbd>n</kbd> and <kbd>p</kbd> move between lines, like dired mode
 
 ### Current Project View
 
-* 't' toggles expanded view for a story. 'Enter' also toggles this view
-* 'R' refreshes the view
-* 'L' list projects. displays the Projects View
-* 'N' will load and display the next iteration
-* 'P' will load and display the previous iteration
-* 'E' will prompt for a new integer estimate for that story
-* numeric prefix + E will use that number for the estimate
-**  example: pressing '2' followed by pressing 'E' will assign a 2 pt estimate for current story
-* 'C' will prompt for a new comment
-* 'S' will prompt for new status
-* 'T' will prompt for a new task
-* 'F' will mark the task (not the story) under the cursor as finished
-* '+' adds a new story
+* <kbd>t</kbd> toggles expanded view for a story. <kbd>Enter</kbd> also toggles this view
+* <kbd>R</kbd> refreshes the view
+* <kbd>L</kbd> list projects. displays the Projects View
+* <kbd>N</kbd> will load and display the next iteration
+* <kbd>P</kbd> will load and display the previous iteration
+* <kbd>E</kbd> will prompt for a new integer estimate for that story
+* **numeric prefix** + <kbd>E</kbd> will use that number for the estimate
+**  example: pressing <kbd>2</kbd> followed by pressing <kbd>E</kbd> will assign a **2 pt** estimate for current story
+* <kbd>C</kbd> will prompt for a new comment
+* <kbd>S</kbd> will prompt for new status
+* <kbd>T</kbd> will prompt for a new task
+* <kbd>F</kbd> will mark the task (not the story) under the cursor as finished
+* <kbd>+</kbd> adds a new story
 
 ## Issues & Feature Requests
 
