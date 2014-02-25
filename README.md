@@ -6,7 +6,8 @@ It is not an attempt to replace every feature of the web interface.
 
 ## Installation
 
-You can install via [marmalade](http://marmalade-repo.org/packages/pivotal-tracker) or by cloning the repo.
+You can install via [marmalade](http://marmalade-repo.org/packages/pivotal-tracker)
+or [melpa](http://melpa.milkbox.net/), or by cloning the repo.
 
 ## Initial Setup
 
