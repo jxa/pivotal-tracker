@@ -153,6 +153,22 @@
                  'pivotal-update-current-story
                  (format "<story><current_state>%s</current_state></story>" new-state))))
 
+(defun pivotal-set-owner (new-owner-id)
+  "set owner for the current story."
+  (interactive
+   (let ((member-name-id-alist (pivotal-project->member-name-id-alist *pivotal-current-project*)))
+     (list (cdr (assoc (completing-read "New owner: "
+                                        member-name-id-alist
+                                        nil
+                                        t
+                                        nil
+                                        'pivotal-story-owner-history)
+                       member-name-id-alist)))))
+  (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" (pivotal-story-id-at-point))
+	       "PUT"
+	       'pivotal-update-current-story
+	       (format "<story><owned_by_id>%s</owned_by_id></story>" new-owner-id)))
+
 (defun pivotal-add-comment (comment)
   "prompt user for comment and add it to the current story"
   (interactive "sAdd Comment: ")
@@ -287,6 +303,7 @@
   (define-key pivotal-mode-map (kbd "E") 'pivotal-estimate-story)
   (define-key pivotal-mode-map (kbd "C") 'pivotal-add-comment)
   (define-key pivotal-mode-map (kbd "S") 'pivotal-set-status)
+  (define-key pivotal-mode-map (kbd "O") 'pivotal-set-owner)
   (define-key pivotal-mode-map (kbd "L") 'pivotal)
   (define-key pivotal-mode-map (kbd "T") 'pivotal-add-task)
   (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)

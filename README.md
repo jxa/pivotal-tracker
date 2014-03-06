@@ -44,6 +44,7 @@ or set it manually:
 **  example: pressing <kbd>2</kbd> followed by pressing <kbd>E</kbd> will assign a **2 pt** estimate for current story
 * <kbd>C</kbd> will prompt for a new comment
 * <kbd>S</kbd> will prompt for new status
+* <kbd>O</kbd> will prompt for new story owner
 * <kbd>T</kbd> will prompt for a new task
 * <kbd>F</kbd> will mark the task (not the story) under the cursor as finished
 * <kbd>+</kbd> adds a new story
