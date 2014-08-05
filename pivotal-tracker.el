@@ -33,6 +33,7 @@
 
 ;;; Code:
 
+(require 'cl)
 (require 'xml)
 (require 'url)
 (require 'json)
@@ -47,6 +48,12 @@
     "API key found on the /profile page of pivotal tracker"
     :group 'pivotal
     :type 'string))
+
+(defmacro namespace (ns-name symbols-to-namespace &rest body)
+  "Provide convenient local aliases symbols which will expand to namespace-prefixed symbols"
+  `(let) body)
+
+(macroexpand `(namespace foo (fu bar) (quote fu bar baz)))
 
 (defconst pivotal-base-url "https://www.pivotaltracker.com/services/v3"
   "format string to use when creating endpoint urls")
