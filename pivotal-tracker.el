@@ -213,6 +213,11 @@
   (interactive)
   (browse-url (pivotal-get-project-url *pivotal-current-project*)))
 
+(defun pivotal-open-project-at-point-in-browser ()
+  "asks a WWW browser to open the project at point"
+  (interactive)
+  (browse-url (pivotal-get-project-url (pivotal-project-id-at-point))))
+
 ;;;;;;;; CALLBACKS
 
 
@@ -343,6 +348,7 @@
   (define-key pivotal-project-mode-map (kbd "j") 'next-line)
   (define-key pivotal-project-mode-map (kbd "k") 'previous-line)
 
+  (define-key pivotal-project-mode-map (kbd "o") 'pivotal-open-project-at-point-in-browser)
   (define-key pivotal-project-mode-map (kbd ".") 'pivotal-set-project)
   (define-key pivotal-project-mode-map (kbd "C-m") 'pivotal-set-project))
 
