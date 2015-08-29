@@ -207,6 +207,11 @@
     (kill-new story-url)
     (message (concat "copied story URL to kill ring: " story-url))))
 
+(defun pivotal-open-story-in-browser ()
+  "asks a WWW browser to load the story"
+  (interactive)
+  (browse-url (pivotal-story-url-at-point)))
+
 ;;;;;;;; CALLBACKS
 
 
@@ -323,6 +328,7 @@
   (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)
   (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
   (define-key pivotal-mode-map (kbd "l") 'pivotal-kill-ring-save-story-url)
+  (define-key pivotal-mode-map (kbd "o") 'pivotal-open-story-in-browser)
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
 
