@@ -208,6 +208,11 @@
   (interactive)
   (browse-url (pivotal-story-url-at-point)))
 
+(defun pivotal-open-current-project-in-browser ()
+  "asks a WWW browser to load the current project"
+  (interactive)
+  (browse-url (pivotal-get-project-url *pivotal-current-project*)))
+
 ;;;;;;;; CALLBACKS
 
 
@@ -325,6 +330,7 @@
   (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
   (define-key pivotal-mode-map (kbd "l") 'pivotal-kill-ring-save-story-url)
   (define-key pivotal-mode-map (kbd "o") 'pivotal-open-story-in-browser)
+  (define-key pivotal-mode-map (kbd "C-c o") 'pivotal-open-current-project-in-browser)
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
 
