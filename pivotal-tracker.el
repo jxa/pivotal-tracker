@@ -399,6 +399,11 @@
           (pivotal-get-project project-id)
         project))))
 
+(defun pivotal-get-project-url (project-id)
+  (replace-regexp-in-string "/services/v3/" "/n/"
+                            (pivotal-url
+                             "projects" project-id)))
+
 (defun pivotal-get-estimate-scale (project-id)
   (let* ((project             (pivotal-get-project project-id))
          (point-scale-str     (cdr (assoc 'point_scale project)))
