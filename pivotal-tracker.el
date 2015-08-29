@@ -551,6 +551,12 @@
     (string-match "pivotal-\\([0-9]+\\)" story-str)
     (match-string 1 story-str)))
 
+(defun pivotal-story-url-at-point (&optional position)
+  (replace-regexp-in-string "/services/v3/" "/n/"
+                            (pivotal-url
+                             "projects" *pivotal-current-project*
+                             "stories" (pivotal-story-id-at-point position))))
+
 (defun pivotal-task-id-at-point (&optional position)
   (save-excursion
     (beginning-of-line)
