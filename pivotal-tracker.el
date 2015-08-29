@@ -419,6 +419,12 @@
 
 (defvar pivotal-story-estimate-history '())
 
+(defun pivotal-project-id-at-point ()
+  (save-excursion
+    (beginning-of-line)
+    (re-search-forward "\\([0-9]+\\)" (point-at-eol))
+    (match-string 1)))
+
 (defun pivotal-project-member->member-name-id-association (project-member)
   `(,(cdr (assoc 'name (assoc 'person project-member)))
     .
