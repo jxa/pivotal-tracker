@@ -31,6 +31,7 @@ or set it manually:
 * <kbd>M-x pivotal</kbd> will display a list of your current projects
 * <kbd>RET</kbd> or <kbd>.</kbd> will load the current iteration for the given project
 * <kbd>n</kbd> and <kbd>p</kbd> move between lines, like dired mode
+* <kbd>o</kbd> will open the given project in an external web browser
 
 ### Current Project View
 
@@ -48,6 +49,9 @@ or set it manually:
 * <kbd>T</kbd> will prompt for a new task
 * <kbd>F</kbd> will mark the task (not the story) under the cursor as finished
 * <kbd>+</kbd> adds a new story
+* <kbd>l</kbd> saves the url of the given story to the kill-ring (copies it)
+* <kbd>o</kbd> will open the given story in an exernal browser
+* <kbd>C-c o</kbd> will open the current project in an external browser
 
 ## Issues & Feature Requests
 
