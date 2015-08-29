@@ -200,6 +200,13 @@
                'pivotal-check-task-callback
                (format "<task><complete>true</complete></task>")))
 
+(defun pivotal-kill-ring-save-story-url ()
+  "saves the external story URL as if killed, but don't kill anything"
+  (interactive)
+  (let ((story-url pivotal-story-url-at-point))
+    (kill-new story-url)
+    (message (concat "copied story URL to kill ring: " story-url))))
+
 ;;;;;;;; CALLBACKS
 
 
@@ -315,6 +322,7 @@
   (define-key pivotal-mode-map (kbd "T") 'pivotal-add-task)
   (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)
   (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
+  (define-key pivotal-mode-map (kbd "l") 'pivotal-kill-ring-save-story-url)
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
 
