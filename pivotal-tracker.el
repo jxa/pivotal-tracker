@@ -117,11 +117,7 @@
 (defun pivotal-set-project ()
   "set the current project, and load the current iteration for that project"
   (interactive)
-  (setq *pivotal-current-project*
-        (progn
-          (beginning-of-line)
-          (re-search-forward "\\([0-9]+\\)" (point-at-eol))
-          (match-string 1)))
+  (setq *pivotal-current-project* (pivotal-project-id-at-point))
   (pivotal-get-current))
 
 (defun pivotal-get-story (id)
