@@ -335,7 +335,7 @@
   (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
   (define-key pivotal-mode-map (kbd "l") 'pivotal-kill-ring-save-story-url)
   (define-key pivotal-mode-map (kbd "o") 'pivotal-open-story-in-browser)
-  (define-key pivotal-mode-map (kbd "C-c o") 'pivotal-open-current-project-in-browser)
+  (define-key pivotal-mode-map (kbd "p") 'pivotal-open-current-project-in-browser)
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
 
