@@ -199,7 +199,7 @@
 (defun pivotal-kill-ring-save-story-url ()
   "saves the external story URL as if killed, but don't kill anything"
   (interactive)
-  (let ((story-url pivotal-story-url-at-point))
+  (let ((story-url (pivotal-story-url-at-point)))
     (kill-new story-url)
     (message (concat "copied story URL to kill ring: " story-url))))
 
