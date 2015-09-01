@@ -51,7 +51,7 @@ or set it manually:
 * <kbd>+</kbd> adds a new story
 * <kbd>l</kbd> saves the url of the given story to the kill-ring (copies it)
 * <kbd>o</kbd> will open the given story in an exernal browser
-* <kbd>p</kbd> will open the current project in an external browser
+* <kbd>C-o</kbd> will open the current project in an external browser
 
 ## Issues & Feature Requests
 
