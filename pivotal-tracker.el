@@ -315,10 +315,6 @@
              (?p "Current Project" pivotal-open-current-project-in-browser)
              (?l "Copy Story URL" pivotal-kill-ring-save-story-url)))
 
-(magit-define-popup pivotal-iteration-popup
-  "Popup for interacting with iterations"
-  :actions '((?n "Next" pivotal-next-iteration)
-             (?p "Previous" pivotal-previous-iteration)))
 
 (magit-define-popup pivotal-story-popup
   "Popup for interacting with stories"
@@ -336,7 +332,6 @@
              (?l "List Projects" pivotal)
              (?+ "New Story" pivotal-add-story)
              (?o "Open" pivotal-link-popup)
-             (?i "Iteration" pivotal-iteration-popup)
              (?s "Story" pivotal-story-popup)))
 
 
@@ -358,7 +353,6 @@
 
   ;; SubMenus
   (define-key pivotal-mode-map (kbd "o") 'pivotal-link-popup)
-  (define-key pivotal-mode-map (kbd "i") 'pivotal-iteration-popup)
   (define-key pivotal-mode-map (kbd "s") 'pivotal-story-popup)
 
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
