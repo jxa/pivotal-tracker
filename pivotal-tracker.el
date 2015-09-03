@@ -37,6 +37,7 @@
 (require 'xml)
 (require 'url)
 (require 'json)
+(require 'magit-popup)
 
 ;;;###autoload
 (progn
@@ -307,30 +308,59 @@
     ("^-.*-$" . 'pivotal-title-face)
     ("^--- [a-zA-Z]+$" . 'pivotal-section-face)))
 
+
+(magit-define-popup pivotal-link-popup
+  "Popup for opening stories in a web browser"
+  :actions '((?s "Current Story" pivotal-open-story-in-browser)
+             (?p "Current Project" pivotal-open-current-project-in-browser)
+             (?l "Copy Story URL" pivotal-kill-ring-save-story-url)))
+
+(magit-define-popup pivotal-iteration-popup
+  "Popup for interacting with iterations"
+  :actions '((?n "Next" pivotal-next-iteration)
+             (?p "Previous" pivotal-previous-iteration)))
+
+(magit-define-popup pivotal-story-popup
+  "Popup for interacting with stories"
+  :actions '((?e "Estimate" pivotal-estimate-story)
+             (?c "Comment" pivotal-add-comment)
+             (?s "Set Status" pivotal-set-status)
+             (?o "Set Owner" pivotal-set-owner)
+             (?t "Add Task" pivotal-add-task)
+             (?v "Check Task" pivotal-check-task)))
+
+(magit-define-popup pivotal-dispatch-popup
+  "Root level popup"
+  :actions '((?t "Toggle Visibility" pivotal-toggle-visibility)
+             (?g "Refresh" pivotal-get-current)
+             (?l "List Projects" pivotal)
+             (?+ "New Story" pivotal-add-story)
+             (?o "Open" pivotal-link-popup)
+             (?i "Iteration" pivotal-iteration-popup)
+             (?s "Story" pivotal-story-popup)))
+
+
+
 (define-derived-mode pivotal-mode fundamental-mode "Pivotal"
   (suppress-keymap pivotal-mode-map)
-  (define-key pivotal-mode-map (kbd "t") 'pivotal-toggle-visibility)
-  (define-key pivotal-mode-map (kbd "C-m") 'pivotal-toggle-visibility)
-  (define-key pivotal-mode-map (kbd "R") 'pivotal-get-current)
   (define-key pivotal-mode-map (kbd "n") 'next-line)
   (define-key pivotal-mode-map (kbd "p") 'previous-line)
-  ;; add some bindings for my vim friends
-  (define-key pivotal-mode-map (kbd "j") 'next-line)
-  (define-key pivotal-mode-map (kbd "k") 'previous-line)
+  (define-key pivotal-mode-map (kbd "?") 'pivotal-dispatch-popup)
 
+  ;; Some redundant single-key bindings
+  (define-key pivotal-mode-map (kbd "t") 'pivotal-toggle-visibility)
+  (define-key pivotal-mode-map (kbd "C-m") 'pivotal-toggle-visibility)
+  (define-key pivotal-mode-map (kbd "g") 'pivotal-get-current)
+  (define-key pivotal-mode-map (kbd "l") 'pivotal)
+  (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)
   (define-key pivotal-mode-map (kbd "N") 'pivotal-next-iteration)
   (define-key pivotal-mode-map (kbd "P") 'pivotal-previous-iteration)
-  (define-key pivotal-mode-map (kbd "E") 'pivotal-estimate-story)
-  (define-key pivotal-mode-map (kbd "C") 'pivotal-add-comment)
-  (define-key pivotal-mode-map (kbd "S") 'pivotal-set-status)
-  (define-key pivotal-mode-map (kbd "O") 'pivotal-set-owner)
-  (define-key pivotal-mode-map (kbd "L") 'pivotal)
-  (define-key pivotal-mode-map (kbd "T") 'pivotal-add-task)
-  (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)
-  (define-key pivotal-mode-map (kbd "F") 'pivotal-check-task)
-  (define-key pivotal-mode-map (kbd "l") 'pivotal-kill-ring-save-story-url)
-  (define-key pivotal-mode-map (kbd "o") 'pivotal-open-story-in-browser)
-  (define-key pivotal-mode-map (kbd "C-o") 'pivotal-open-current-project-in-browser)
+
+  ;; SubMenus
+  (define-key pivotal-mode-map (kbd "o") 'pivotal-link-popup)
+  (define-key pivotal-mode-map (kbd "i") 'pivotal-iteration-popup)
+  (define-key pivotal-mode-map (kbd "s") 'pivotal-story-popup)
+
   (setq font-lock-defaults '(pivotal-font-lock-keywords))
   (font-lock-mode))
 
