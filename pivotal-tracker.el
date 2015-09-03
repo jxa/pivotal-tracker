@@ -311,19 +311,18 @@
 
 (magit-define-popup pivotal-link-popup
   "Popup for opening stories in a web browser"
-  :actions '((?s "Current Story" pivotal-open-story-in-browser)
-             (?p "Current Project" pivotal-open-current-project-in-browser)
-             (?l "Copy Story URL" pivotal-kill-ring-save-story-url)))
-
+  :actions '((?o "Current story" pivotal-open-story-in-browser)
+             (?p "Current project" pivotal-open-current-project-in-browser)
+             (?l "Copy current story URL" pivotal-kill-ring-save-story-url)))
 
 (magit-define-popup pivotal-story-popup
   "Popup for interacting with stories"
   :actions '((?e "Estimate" pivotal-estimate-story)
              (?c "Comment" pivotal-add-comment)
-             (?s "Set Status" pivotal-set-status)
-             (?o "Set Owner" pivotal-set-owner)
-             (?t "Add Task" pivotal-add-task)
-             (?v "Check Task" pivotal-check-task)))
+             (?s "Set status" pivotal-set-status)
+             (?o "Set owner" pivotal-set-owner)
+             (?t "Add task" pivotal-add-task)
+             (?v "Check task" pivotal-check-task)))
 
 (magit-define-popup pivotal-dispatch-popup
   "Popup console for dispatching other popups"
