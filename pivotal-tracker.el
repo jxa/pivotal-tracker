@@ -112,6 +112,7 @@
   "set the current project, and load the current iteration for that project"
   (interactive)
   (setq *pivotal-current-project* (pivotal-project-id-at-point))
+  (setq *pivotal-iteration* pivotal-current-iteration-number)
   (pivotal-get-current))
 
 (defun pivotal-get-story (id)
