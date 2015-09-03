@@ -326,13 +326,19 @@
              (?v "Check Task" pivotal-check-task)))
 
 (magit-define-popup pivotal-dispatch-popup
-  "Root level popup"
-  :actions '((?t "Toggle Visibility" pivotal-toggle-visibility)
-             (?g "Refresh" pivotal-get-current)
-             (?l "List Projects" pivotal)
-             (?+ "New Story" pivotal-add-story)
-             (?o "Open" pivotal-link-popup)
-             (?s "Story" pivotal-story-popup)))
+  "Popup console for dispatching other popups"
+  :actions '("Popup commands"
+             (?o "Openening in a browser" pivotal-link-popup)
+             (?s "Modifying stories" pivotal-story-popup)
+             "\
+g      refresh current buffer
+TAB    toggle story details
++      add new story
+N      next iteration
+P      previous iteration
+^      list all pivotal projects
+
+C-h m  show all keybindings"))
 
 
 
@@ -342,11 +348,9 @@
   (define-key pivotal-mode-map (kbd "p") 'previous-line)
   (define-key pivotal-mode-map (kbd "?") 'pivotal-dispatch-popup)
 
-  ;; Some redundant single-key bindings
-  (define-key pivotal-mode-map (kbd "t") 'pivotal-toggle-visibility)
-  (define-key pivotal-mode-map (kbd "C-m") 'pivotal-toggle-visibility)
+  (define-key pivotal-mode-map (kbd "<tab>") 'pivotal-toggle-visibility)
   (define-key pivotal-mode-map (kbd "g") 'pivotal-get-current)
-  (define-key pivotal-mode-map (kbd "l") 'pivotal)
+  (define-key pivotal-mode-map (kbd "^") 'pivotal)
   (define-key pivotal-mode-map (kbd "+") 'pivotal-add-story)
   (define-key pivotal-mode-map (kbd "N") 'pivotal-next-iteration)
   (define-key pivotal-mode-map (kbd "P") 'pivotal-previous-iteration)
