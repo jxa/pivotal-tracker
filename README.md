@@ -1,57 +1,73 @@
-# pivotal-tracker.el
+[![MELPA](http://melpa.org/packages/pivotal-tracker-badge.svg)](http://melpa.org/#/pivotal-tracker)
 
-Pivotal Tracker Mode provides a mode and functions for interacting with Pivotal Tracker through its API.
-It is designed to give most of the functionality that is important to a developer.
-It is not an attempt to replace every feature of the web interface.
+# Pivotal Tracker mode for Emacs
+
+Pivotal Tracker Mode (`pivotal-tracker`) provides an Emacs based user
+interface for [Pivotal Tracker](https://www.pivotaltracker.com).  It's
+designed to give the most relevant functionality to a developer or pair
+working on stories.
+
+Please note, it's not an attempt to replace all the features of the
+web interface.
 
 ## Installation
 
-You can install via [MELPA](http://melpa.milkbox.net/#/pivotal-tracker) or by cloning the repo.
+You can install via [MELPA](http://melpa.milkbox.net/#/pivotal-tracker)
 
 ## Initial Setup
 
-Before using the tracker you must customize your pivotal API key. You can
-obtain the key from the [Profile](https://www.pivotaltracker.com/profile)
-link in the Pivotal Tracker web application. Once you have the key, customize it.
+Before using the tracker you must setup your pivotal API key in
+Emacs. You can obtain the key from
+the [Profile](https://www.pivotaltracker.com/profile) link in the
+Pivotal Tracker web application.
 
-Do it via **customize** mechanism:
+Once you have the key you can use **customize** to set it in Emacs.
+
+You'll have the option to save it or just use it for the current session.
 
 <kbd>M-x customize-group RET pivotal RET</kbd>
 
-or set it manually:
+You can also manually add it to your `.emacs.d` or `.spacemacs`, add
+the following `setq`:
 
-```el
+```elisp
 (setq pivotal-api-token "your-secret-token")
 ```
 
 ## Usage
 
-### Projects View
+- <kbd>M-x pivotal</kbd> Start pivotal-tracker and view your current projects list
 
-* <kbd>M-x pivotal</kbd> will display a list of your current projects
-* <kbd>RET</kbd> or <kbd>.</kbd> will load the current iteration for the given project
-* <kbd>n</kbd> and <kbd>p</kbd> move between lines, like dired mode
-* <kbd>o</kbd> will open the given project in an external web browser
+### Key bindings
 
-### Current Project View
+- <kbd>p</kbd> Move up one line
+- <kbd>n</kbd> Move down one line
 
-* <kbd>t</kbd> toggles expanded view for a story. <kbd>Enter</kbd> also toggles this view
-* <kbd>R</kbd> refreshes the view
-* <kbd>L</kbd> list projects. displays the Projects View
-* <kbd>N</kbd> will load and display the next iteration
-* <kbd>P</kbd> will load and display the previous iteration
-* <kbd>E</kbd> will prompt for a new integer estimate for that story
-* **numeric prefix** + <kbd>E</kbd> will use that number for the estimate
-**  example: pressing <kbd>2</kbd> followed by pressing <kbd>E</kbd> will assign a **2 pt** estimate for current story
-* <kbd>C</kbd> will prompt for a new comment
-* <kbd>S</kbd> will prompt for new status
-* <kbd>O</kbd> will prompt for new story owner
-* <kbd>T</kbd> will prompt for a new task
-* <kbd>F</kbd> will mark the task (not the story) under the cursor as finished
-* <kbd>+</kbd> adds a new story
-* <kbd>l</kbd> saves the url of the given story to the kill-ring (copies it)
-* <kbd>o</kbd> will open the given story in an exernal browser
-* <kbd>C-o</kbd> will open the current project in an external browser
+#### Projects list view
+
+- <kbd>RET</kbd> or <kbd>.</kbd> Load the current iteration for the given project
+- <kbd>o</kbd> Open the given project in the default OS browser
+
+#### Current project view
+
+- <kbd>TAB</kbd> Toggles expanded/collapsed view for a story
+- <kbd>g</kbd> Refresh the project view
+- <kbd>^</kbd> Go back to your projects list
+- <kbd>N</kbd> Go to the next iteration
+- <kbd>P</kbd> Go to the previous iteration
+
+- <kbd>s</kbd> **Story popup menu**
+    - <kbd>e</kbd> Estimate
+    - <kbd>c</kbd> Comment
+    - <kbd>s</kbd> Set status
+    - <kbd>o</kbd> Set owner
+    - <kbd>t</kbd> Add task
+    - <kbd>v</kbd> Check task
+
+- <kbd>o</kbd> **Link popup menu**
+    - <kbd>o</kbd> Open story in external browser
+    - <kbd>l</kbd> Copy story URL to kill-ring / clipboard
+    - <kbd>p</kbd> Open current project in the default OS browser
 
 ## Issues & Feature Requests
 
