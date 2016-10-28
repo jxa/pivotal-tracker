@@ -550,11 +550,16 @@ ESTIMATE the story points estimation."
 
 (defun pivotal-get-xml-from-current-buffer ()
   "Get Pivotal API XML from the current buffer."
-  (let ((xml (if (functionp 'xml-parse-fragment)
-                 (cdr (xml-parse-fragment))
-               (xml-parse-region))))
-    (kill-buffer)
-    xml))
+  (let ((nb (get-buffer-create (make-temp-name "scratch")))
+	(cb (current-buffer)))
+    (decode-coding-region (point-min) (point-max) 'utf-8 nb)
+    (with-current-buffer nb
+      (kill-buffer cb)
+      (let ((xml (if (functionp 'xml-parse-fragment)
+		     (cdr (xml-parse-fragment))
+		   (xml-parse-region))))
+	(kill-buffer)
+	xml))))
 
 (defun pivotal-insert-projects (project-list-xml)
   "Render projects one per line in their own buffer, from source PROJECT-LIST-XML."
