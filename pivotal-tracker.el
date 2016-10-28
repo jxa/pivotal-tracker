@@ -554,13 +554,12 @@ ESTIMATE the story points estimation."
 	(cb (current-buffer)))
     (decode-coding-region (point-min) (point-max) 'utf-8 nb)
     (with-current-buffer nb
-      (let ()
-	(kill-buffer cb)
-	(let ((xml (if (functionp 'xml-parse-fragment)
-		       (cdr (xml-parse-fragment))
-		     (xml-parse-region))))
-	  (kill-buffer)
-	  xml)))))
+      (kill-buffer cb)
+      (let ((xml (if (functionp 'xml-parse-fragment)
+		     (cdr (xml-parse-fragment))
+		   (xml-parse-region))))
+	(kill-buffer)
+	xml))))
 
 (defun pivotal-insert-projects (project-list-xml)
   "Render projects one per line in their own buffer, from source PROJECT-LIST-XML."
