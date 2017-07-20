@@ -33,7 +33,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'xml)
 (require 'url)
 (require 'json)
@@ -546,7 +546,7 @@ ESTIMATE the story points estimation."
 
 (defun assert-pivotal-api-token ()
   "Notify the user if the `pivotal-api-token' is not set."
-  (assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
+  (cl-assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
 
 (defun pivotal-get-xml-from-current-buffer ()
   "Get Pivotal API XML from the current buffer."
