@@ -195,6 +195,13 @@ If you try to go before 0 it just reloads current."
                'pivotal-check-task-callback
                (format "<task><complete>true</complete></task>")))
 
+(defun pivotal-kill-ring-save-id ()
+  "Save the external story ID as if killed, but don't kill anything."
+  (interactive)
+  (let ((story-id (pivotal-story-id-at-point)))
+    (kill-new story-id)
+    (message (concat "copied story ID to kill ring: " story-id))))
+
 (defun pivotal-kill-ring-save-story-url ()
   "Save the external story URL as if killed, but don't kill anything."
   (interactive)
@@ -322,7 +329,8 @@ If you try to go before 0 it just reloads current."
   "Popup for opening stories in a web browser"
   :actions '((?o "Current story" pivotal-open-story-in-browser)
              (?p "Current project" pivotal-open-current-project-in-browser)
-             (?l "Copy current story URL" pivotal-kill-ring-save-story-url)))
+             (?l "Copy current story URL" pivotal-kill-ring-save-story-url)
+	     (?i "Copy current story ID" pivotal-kill-ring-save-id)))
 
 (magit-define-popup pivotal-story-popup
   "Popup for interacting with stories"
