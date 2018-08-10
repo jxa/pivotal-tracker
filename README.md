@@ -16,23 +16,18 @@ You can install via [MELPA](http://melpa.milkbox.net/#/pivotal-tracker)
 
 ## Initial Setup
 
-Before using the tracker you must setup your pivotal API key in
-Emacs. You can obtain the key from
-the [Profile](https://www.pivotaltracker.com/profile) link in the
-Pivotal Tracker web application.
+Before using the tracker you must store your Pivotal API key somewhere Emacs
+can find it. Because your API key is sensitive information it must not be
+stored in clear text. Using the [auth-source] library Emacs can retrieve your
+API key from `~/.authinfo.gpg`. Retrieve your API key from the
+[Profile](https://www.pivotaltracker.com/profile) page and add a new entry in
+`~/.authinfo.gpg`
 
-Once you have the key you can use **customize** to set it in Emacs.
-
-You'll have the option to save it or just use it for the current session.
-
-<kbd>M-x customize-group RET pivotal RET</kbd>
-
-You can also manually add it to your `.emacs.d` or `.spacemacs`, add
-the following `setq`:
-
-```elisp
-(setq pivotal-api-token "your-secret-token")
 ```
+machine pivotal-tracker.com password <your-api-key>
+```
+
+Once you've done that you'll be able to use `pivotal-tracker`.
 
 ## Usage
 
