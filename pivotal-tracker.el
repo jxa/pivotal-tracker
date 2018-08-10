@@ -780,12 +780,8 @@ Put point at the first char of the next story."
 
 (defun pivotal-comments (story)
   "Get comments for the STORY."
-  (let ((notes (pivotal-xml-collection story `(notes note)))
-        (comments ""))
-    (mapc (lambda (note)
-            (setq comments (concat comments (pivotal-format-comment note))))
-          notes)
-    comments))
+  (let ((notes (pivotal-xml-collection story `(notes note))))
+    (mapconcat #'pivotal-format-comment notes "")))
 
 (defun pivotal-format-comment (note)
   "Format the NOTE as a comment."
@@ -798,12 +794,8 @@ Put point at the first char of the next story."
 
 (defun pivotal-tasks (story)
   "Get the tasks for STORY."
-  (let ((tasks (pivotal-xml-collection story `(tasks task)))
-        (tasks-string ""))
-    (mapc (lambda (task)
-            (setq tasks-string (concat tasks-string (pivotal-format-task task))))
-          tasks)
-    tasks-string))
+  (let ((tasks (pivotal-xml-collection story `(tasks task))))
+    (mapconcat 'pivotal-format-task tasks "")))
 
 (defun pivotal-format-task (task)
   "Format TASK."
