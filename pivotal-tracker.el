@@ -68,10 +68,9 @@
 (defun pivotal ()
   "Launch pivotal-projects window, or just switch to it."
   (interactive)
-  (let ((buffer (get-buffer "*pivotal-projects*")))
-    (if buffer
-        (switch-to-buffer buffer)
-      (pivotal-get-projects))))
+  (if-let ((buffer (get-buffer "*pivotal-projects*")))
+      (switch-to-buffer buffer)
+    (pivotal-get-projects)))
 
 ;;;###autoload
 (defun pivotal-get-projects ()
@@ -131,10 +130,10 @@ If you try to go before 0 it just reloads current."
   "Show/hide story detail."
   (interactive)
   (progn
-    (let ((cur-invisible (member (pivotal-story-at-point) buffer-invisibility-spec)))
-      (if cur-invisible
-          (pivotal-show)
-        (pivotal-hide)))
+    (if-let ((cur-invisible (member (pivotal-story-at-point)
+                                    buffer-invisibility-spec)))
+        (pivotal-show)
+      (pivotal-hide))
     (force-window-update (current-buffer))))
 
 (defun pivotal-estimate-story (estimate)
