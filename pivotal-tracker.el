@@ -224,7 +224,7 @@ If you try to go before 0 it just reloads current."
   (let ((xml (pivotal-get-xml-from-current-buffer)))
     (with-current-buffer (get-buffer-create "*pivotal-iteration*")
       (pivotal-mode)
-      (delete-region (point-min) (point-max))
+      (erase-buffer)
       (switch-to-buffer (current-buffer))
 
       ;; for some reason trying to load an iteration that doesn't
@@ -241,14 +241,14 @@ If you try to go before 0 it just reloads current."
   (let ((xml (pivotal-get-xml-from-current-buffer)))
     (with-current-buffer (get-buffer-create "*pivotal-projects*")
       (pivotal-project-mode)
-      (delete-region (point-min) (point-max))
+      (erase-buffer)
       (switch-to-buffer (current-buffer))
       (pivotal-insert-projects xml))))
 
 (defun pivotal-story-callback (status)
   "Pivotal story callback handler (accept STATUS from response)."
   (let ((xml (pivotal-get-xml-from-current-buffer)))
-    (delete-region (point-min) (point-max))
+    (erase-buffer)
     (insert (pivotal-format-story xml)) (rename-buffer (concat "*pivotal-" (pivotal-story-attribute xml 'id) "*"))
     (switch-to-buffer (current-buffer))))
 
