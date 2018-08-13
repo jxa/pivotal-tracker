@@ -98,7 +98,7 @@
 (defun pivotal-next-iteration ()
   "Replace iteration view with the next upcoming iteration."
   (interactive)
-  (setq *pivotal-iteration* (+ 1 *pivotal-iteration*))
+  (setq *pivotal-iteration* (1+ *pivotal-iteration*))
   (pivotal-get-iteration *pivotal-iteration*))
 
 (defun pivotal-previous-iteration ()
@@ -108,7 +108,7 @@ If you try to go before 0 it just reloads current."
   (setq *pivotal-iteration*
         (if (= pivotal-current-iteration-number *pivotal-iteration*)
             pivotal-current-iteration-number
-          (- *pivotal-iteration* 1)))
+          (1- *pivotal-iteration*)))
   (pivotal-get-iteration *pivotal-iteration*))
 
 (defun pivotal-set-project ()
@@ -728,10 +728,10 @@ Put point at the first char of the next story."
   (let ((story-id (get-text-property (point) 'pivotal-story-id))
         (first-point (point))
         (last-point (point)))
-    (while (pivotal-point-has-story-id (- first-point 1) story-id)
-      (setq first-point (- first-point 1)))
-    (while (pivotal-point-has-story-id (+ last-point 1) story-id)
-      (setq last-point (+ last-point 1)))
+    (while (pivotal-point-has-story-id (1- first-point) story-id)
+      (setq first-point (1- first-point)))
+    (while (pivotal-point-has-story-id (1+ last-point) story-id)
+      (setq last-point (1+ last-point)))
     (list first-point last-point)))
 
 (defun pivotal-point-has-story-id (point story-id)
