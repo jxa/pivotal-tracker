@@ -26,30 +26,27 @@
 ;; with Pivotal Tracker through its API.
 ;; It is designed to give most of the functionality that is important to a developer.
 
-;; Before using the tracker you must customize your pivotal API key.
-;; You can obtain the key from the 'My Profile' link in the Pivotal Tracker
-;; web application.
-;; M-x customize-group RET pivotal RET
+;; Before using pivotal-tracker.el you must save your pivotal API key
+;; under ~/.authinfo.gpg. See the README for further instructions.
 
 ;;; Code:
 
-(require 'cl-lib)
+(eval-when-compile
+  (require 'subr-x))
 (require 'xml)
 (require 'url)
 (require 'json)
+(require 'auth-source)
 (require 'magit-popup)
 
 
-;;;###autoload
-(progn
-  (defgroup pivotal nil
-    "Pivotal Tracker"
-    :group 'external)
+(defgroup pivotal nil
+  "Pivotal Tracker"
+  :group 'external)
 
-  (defcustom pivotal-api-token ""
-    "API key found on the /profile page of pivotal tracker"
-    :group 'pivotal
-    :type 'string))
+(defvar pivotal-api-token nil
+  "The cache of the pivotal API key. The API key found on the
+  /profile page of pivotal tracker")
 
 (defconst pivotal-base-url "https://www.pivotaltracker.com/services/v3"
   "Format string to use when creating endpoint urls.")
@@ -61,6 +58,20 @@
 
 (defvar *pivotal-current-project*)
 (defvar *pivotal-iteration* pivotal-current-iteration-number)
+
+(defun pivotal-api-token ()
+  "Return the pivotal API key from the user."
+  (or pivotal-api-token
+      (getenv "PIVOTAL_API_TOKEN")
+      (let* ((pivotal-auth-info
+              (car (auth-source-search :max 1
+                                      :host "api.pivotaltracker.com"
+                                      :require '(:host))))
+             (pivotal-api-token-fn (getf pivotal-auth-info :secret)))
+        (setq pivotal-api-token
+              (funcall pivotal-api-token-fn))
+        pivotal-api-token)
+      (error "You need to generate a personal access token.")))
 
 ;;;;;;;; INTERACTIVE USER FUNS
 
@@ -77,7 +88,6 @@
 (defun pivotal-get-projects ()
   "Show a buffer of all projects you have access to."
   (interactive)
-  (assert-pivotal-api-token)
   (pivotal-api (pivotal-url "projects") "GET" 'pivotal-projects-callback))
 
 (defun pivotal-get-current ()
@@ -90,8 +100,6 @@
   (let ((query-string (if (= pivotal-current-iteration-number iteration)
                           "iterations/current"
                         (format "iterations/backlog?offset=%s&limit=1" iteration))))
-
-    (assert-pivotal-api-token)
     (pivotal-api (pivotal-url "projects" *pivotal-current-project* query-string)
                  "GET"
                  'pivotal-iteration-callback)))
@@ -122,7 +130,6 @@ If you try to go before 0 it just reloads current."
 (defun pivotal-get-story (id)
   "Open a single story (ID) for view / edit."
   (interactive)
-  (assert-pivotal-api-token)
   (pivotal-api (pivotal-url "projects" *pivotal-current-project* "stories" id)
                "GET"
                'pivotal-story-callback))
@@ -405,7 +412,7 @@ CALLBACK func to handle request complete/fail
 Optionally provide XML-DATA to send to the API endpoint."
   (let ((url-request-method method)
         (url-request-data xml-data)
-        (url-request-extra-headers `(("X-TrackerToken" . ,pivotal-api-token)
+        (url-request-extra-headers `(("X-TrackerToken" . ,(pivotal-api-token))
                                      ("Content-Type" . "application/xml"))))
     (url-retrieve url callback)))
 
@@ -426,7 +433,7 @@ provide JSON-DATA to send to the API endpoint.
 CALLBACK func to handle request complete/fail"
   (let ((url-request-method method)
         (url-request-data json-data)
-        (url-request-extra-headers `(("X-TrackerToken" . ,pivotal-api-token)
+        (url-request-extra-headers `(("X-TrackerToken" . ,(pivotal-api-token))
                                      ("Content-Type" . "application/json"))))
     (if callback
         (url-retrieve url callback)
@@ -543,10 +550,6 @@ ESTIMATE the story points estimation."
                                                     :requested_by_id requester-id
                                                     :estimate        estimate))))
   (message "Story added!"))
-
-(defun assert-pivotal-api-token ()
-  "Notify the user if the `pivotal-api-token' is not set."
-  (cl-assert (not (string-equal "" pivotal-api-token)) nil "Please set pivotal-api-token: M-x customize-group RET pivotal RET"))
 
 (defun pivotal-get-xml-from-current-buffer ()
   "Get Pivotal API XML from the current buffer."
