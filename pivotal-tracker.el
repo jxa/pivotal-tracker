@@ -68,10 +68,9 @@
 (defun pivotal ()
   "Launch pivotal-projects window, or just switch to it."
   (interactive)
-  (let ((buffer (get-buffer "*pivotal-projects*")))
-    (if buffer
-        (switch-to-buffer buffer)
-      (pivotal-get-projects))))
+  (if-let ((buffer (get-buffer "*pivotal-projects*")))
+      (switch-to-buffer buffer)
+    (pivotal-get-projects)))
 
 ;;;###autoload
 (defun pivotal-get-projects ()
@@ -99,7 +98,7 @@
 (defun pivotal-next-iteration ()
   "Replace iteration view with the next upcoming iteration."
   (interactive)
-  (setq *pivotal-iteration* (+ 1 *pivotal-iteration*))
+  (setq *pivotal-iteration* (1+ *pivotal-iteration*))
   (pivotal-get-iteration *pivotal-iteration*))
 
 (defun pivotal-previous-iteration ()
@@ -109,7 +108,7 @@ If you try to go before 0 it just reloads current."
   (setq *pivotal-iteration*
         (if (= pivotal-current-iteration-number *pivotal-iteration*)
             pivotal-current-iteration-number
-          (- *pivotal-iteration* 1)))
+          (1- *pivotal-iteration*)))
   (pivotal-get-iteration *pivotal-iteration*))
 
 (defun pivotal-set-project ()
@@ -131,10 +130,10 @@ If you try to go before 0 it just reloads current."
   "Show/hide story detail."
   (interactive)
   (progn
-    (let ((cur-invisible (member (pivotal-story-at-point) buffer-invisibility-spec)))
-      (if cur-invisible
-          (pivotal-show)
-        (pivotal-hide)))
+    (if-let ((cur-invisible (member (pivotal-story-at-point)
+                                    buffer-invisibility-spec)))
+        (pivotal-show)
+      (pivotal-hide))
     (force-window-update (current-buffer))))
 
 (defun pivotal-estimate-story (estimate)
@@ -225,7 +224,7 @@ If you try to go before 0 it just reloads current."
   (let ((xml (pivotal-get-xml-from-current-buffer)))
     (with-current-buffer (get-buffer-create "*pivotal-iteration*")
       (pivotal-mode)
-      (delete-region (point-min) (point-max))
+      (erase-buffer)
       (switch-to-buffer (current-buffer))
 
       ;; for some reason trying to load an iteration that doesn't
@@ -242,14 +241,14 @@ If you try to go before 0 it just reloads current."
   (let ((xml (pivotal-get-xml-from-current-buffer)))
     (with-current-buffer (get-buffer-create "*pivotal-projects*")
       (pivotal-project-mode)
-      (delete-region (point-min) (point-max))
+      (erase-buffer)
       (switch-to-buffer (current-buffer))
       (pivotal-insert-projects xml))))
 
 (defun pivotal-story-callback (status)
   "Pivotal story callback handler (accept STATUS from response)."
   (let ((xml (pivotal-get-xml-from-current-buffer)))
-    (delete-region (point-min) (point-max))
+    (erase-buffer)
     (insert (pivotal-format-story xml)) (rename-buffer (concat "*pivotal-" (pivotal-story-attribute xml 'id) "*"))
     (switch-to-buffer (current-buffer))))
 
@@ -729,10 +728,10 @@ Put point at the first char of the next story."
   (let ((story-id (get-text-property (point) 'pivotal-story-id))
         (first-point (point))
         (last-point (point)))
-    (while (pivotal-point-has-story-id (- first-point 1) story-id)
-      (setq first-point (- first-point 1)))
-    (while (pivotal-point-has-story-id (+ last-point 1) story-id)
-      (setq last-point (+ last-point 1)))
+    (while (pivotal-point-has-story-id (1- first-point) story-id)
+      (setq first-point (1- first-point)))
+    (while (pivotal-point-has-story-id (1+ last-point) story-id)
+      (setq last-point (1+ last-point)))
     (list first-point last-point)))
 
 (defun pivotal-point-has-story-id (point story-id)
@@ -780,12 +779,8 @@ Put point at the first char of the next story."
 
 (defun pivotal-comments (story)
   "Get comments for the STORY."
-  (let ((notes (pivotal-xml-collection story `(notes note)))
-        (comments ""))
-    (mapc (lambda (note)
-            (setq comments (concat comments (pivotal-format-comment note))))
-          notes)
-    comments))
+  (let ((notes (pivotal-xml-collection story `(notes note))))
+    (mapconcat #'pivotal-format-comment notes "")))
 
 (defun pivotal-format-comment (note)
   "Format the NOTE as a comment."
@@ -798,12 +793,8 @@ Put point at the first char of the next story."
 
 (defun pivotal-tasks (story)
   "Get the tasks for STORY."
-  (let ((tasks (pivotal-xml-collection story `(tasks task)))
-        (tasks-string ""))
-    (mapc (lambda (task)
-            (setq tasks-string (concat tasks-string (pivotal-format-task task))))
-          tasks)
-    tasks-string))
+  (let ((tasks (pivotal-xml-collection story `(tasks task))))
+    (mapconcat 'pivotal-format-task tasks "")))
 
 (defun pivotal-format-task (task)
   "Format TASK."
